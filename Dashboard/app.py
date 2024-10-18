@@ -5,37 +5,44 @@ from sqlalchemy import create_engine
 import os
 
 @st.cache_data 
-def load_data():
-    # engine = create_engine('postgresql+psycopg2://postgres:bonkho20092003@localhost:5432/stock_data')
+def load_stock_data():
     engine = create_engine('postgresql+psycopg2://caokhoi:m6ikFt3TKwnkV75fNZ2FBdKiEHKEu1sN@dpg-cs87v7m8ii6s73c5m19g-a.singapore-postgres.render.com:5432/stock_data_01')
 
     return pd.read_sql("SELECT * FROM stock_data", engine)
 
+def load_stock_info():
+    engine = create_engine('postgresql+psycopg2://caokhoi:m6ikFt3TKwnkV75fNZ2FBdKiEHKEu1sN@dpg-cs87v7m8ii6s73c5m19g-a.singapore-postgres.render.com:5432/stock_data_01')
+
+    return pd.read_sql("SELECT * FROM stock_info", engine)
+
 st.title('Stock Data Visualization')
 
-data = load_data()
+stock_data = load_stock_data()
+sub_data = stock_data[stock_data['stock_code'] in ['AAA', 'VCB']]
+
+stock_info = load_stock_info()
 
 fig = px.line(
-    data,
+    sub_data,
     x='trade_date', 
-    y='open', 
-    color='ticker',
+    y='opening_price', 
+    color='stock_code',
     title="Open Price Over Time by Ticker",
     labels={'open': 'Open Price', 'trade_date': 'Trade Date'}
 )
 
 fig2 = px.line(
-    data,
+    sub_data,
     x='trade_date', 
-    y='close', 
-    color='ticker',
+    y='closing_price', 
+    color='stock_code',
     title="Close Price Over Time by Ticker",
     labels={'close': 'Close Price', 'trade_date': 'Trade Date'}
 )
 
 fig3 = px.histogram(
-    data,
-    x='volume',
+    sub_data,
+    x='total_trading_volume',
     color='ticker',
     title="Trading Volume Distribution by Ticker",
     labels={'volume': 'Trading Volume'},
@@ -45,14 +52,17 @@ fig3 = px.histogram(
 )
 
 
+industry_counts = stock_info['industry_name'].value_counts().reset_index()
+industry_counts.columns = ['industry_name', 'count']
+
+fig4 = px.bar(industry_counts, x='industry_name', y='count', 
+             title='Count of Companies by Industry',
+             labels={'industry_name': 'Industry Name', 'count': 'Count'},
+             color='count', 
+             text='count')
+
 
 st.plotly_chart(fig)
 st.plotly_chart(fig2)
 st.plotly_chart(fig3)
-
-
-if st.button("Exit App"):
-    with open("stop_flag.txt", "w") as f:
-        f.write("stop")
-    st.write("Exiting the app...")
-    st.stop()
+st.plotly_chart(fig4)
