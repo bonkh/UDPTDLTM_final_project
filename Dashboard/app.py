@@ -43,7 +43,7 @@ fig2 = px.line(
 fig3 = px.histogram(
     sub_data,
     x='total_trading_volume',
-    color='ticker',
+    color='stock_code',
     title="Trading Volume Distribution by Ticker",
     labels={'volume': 'Trading Volume'},
     nbins=30, 
