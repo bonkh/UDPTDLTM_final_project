@@ -18,7 +18,7 @@ def load_stock_info():
 st.title('Stock Data Visualization')
 
 stock_data = load_stock_data()
-sub_data = stock_data[stock_data['stock_code'] in ['AAA', 'VCB']]
+sub_data = stock_data[stock_data['stock_code'].isin(['AAA', 'VCB'])]
 
 stock_info = load_stock_info()
 
