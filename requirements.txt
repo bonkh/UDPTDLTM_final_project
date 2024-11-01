@@ -1,0 +1,4 @@
+selenium
+newspaper3k
+webdriver_manager
+lxml[html_clean]
