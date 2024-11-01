@@ -116,8 +116,15 @@ services:
     restart: always
 
   airflow-webserver:
+    build:
+      context: .  # Directory containing your Dockerfile and requirements.txt
+      dockerfile: Dockerfile 
     <<: *airflow-common
     command: webserver
+    environment:
+      <<: *airflow-common-env
+      # Add the following lines for Selenium
+      SELENIUM_CACHE_DIR: /tmp/.cache/selenium
     ports:
       - "8080:8080"
     healthcheck:
@@ -133,6 +140,9 @@ services:
         condition: service_completed_successfully
 
   airflow-scheduler:
+    build:
+      context: .  # Directory containing your Dockerfile and requirements.txt
+      dockerfile: Dockerfile 
     <<: *airflow-common
     command: scheduler
     healthcheck:
@@ -148,6 +158,9 @@ services:
         condition: service_completed_successfully
 
   airflow-worker:
+    build:
+      context: .  # Directory containing your Dockerfile and requirements.txt
+      dockerfile: Dockerfile 
     <<: *airflow-common
     command: celery worker
     healthcheck:

@@ -10,6 +10,9 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
 from time import sleep
 
 # Setup logging
@@ -34,12 +37,14 @@ def get_existing_articles():
 
 def scrape_urls():
     chrome_options = Options()
-    chrome_options.add_argument("--start-fullscreen")
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
     url_list = []
     browser = None
 
     try:
-        browser = webdriver.Chrome(options=chrome_options)
+        browser = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()),options=chrome_options)
         browser.get('https://vietstock.vn/chung-khoan.htm')
         
         for i in range(1, 200):
@@ -75,6 +80,7 @@ def extract_article_content(url_list):
         browser = webdriver.Chrome()
         for url in url_list:
             try:
+                print(f"Processing: {url}")
                 browser.get(url)
                 sleep(2)
                 title = browser.find_element(By.CSS_SELECTOR, 'h1[class="article-title"]').text
@@ -178,7 +184,7 @@ dag = DAG(
     'vietstock_article_crawler',
     default_args=default_args,
     description='Vietstock article crawling DAG',
-    schedule_interval=timedelta(days=1),
+    schedule_interval='@daily',
 )
 
 # Define the tasks

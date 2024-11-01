@@ -15,6 +15,7 @@ try:
         query = text("SELECT code FROM stock_info")
         result = connection.execute(query)
         ticker_list = [row['code'] for row in result]
+
 except Exception as e:
     print(f"Error fetching stock codes: {e}")
 

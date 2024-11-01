@@ -211,7 +211,7 @@ dag = DAG(
     'vnexpress_article_crawler',
     default_args=default_args,
     description='VnExpress article crawling DAG',
-    schedule_interval=timedelta(days=1),
+    schedule_interval= '@daily',
 )
 
 # Define the tasks
