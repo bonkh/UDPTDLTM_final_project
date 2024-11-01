@@ -17,19 +17,25 @@ def load_stock_info():
 
 st.title('Stock Data Visualization')
 
+
 stock_data = load_stock_data()
-sub_data = stock_data[stock_data['stock_code'].isin(['AAA', 'VCB'])]
+stock_code_list = stock_data['stock_code'].unique()
+sub_data = stock_data[stock_data['stock_code'].isin(stock_code_list[100:110])]
 
 stock_info = load_stock_info()
 
+
+sub_data = sub_data.sort_values(by=['stock_code', 'trade_date'])
+
 fig = px.line(
     sub_data,
-    x='trade_date', 
-    y='opening_price', 
+    x='trade_date',
+    y='opening_price',
     color='stock_code',
     title="Open Price Over Time by Ticker",
-    labels={'open': 'Open Price', 'trade_date': 'Trade Date'}
-)
+    labels={'opening_price': 'Open Price', 'trade_date': 'Trade Date'},
+    line_shape='linear')
+
 
 fig2 = px.line(
     sub_data,
@@ -50,7 +56,6 @@ fig3 = px.histogram(
     marginal='box', 
     opacity=0.7 
 )
-
 
 industry_counts = stock_info['industry_name'].value_counts().reset_index()
 industry_counts.columns = ['industry_name', 'count']
