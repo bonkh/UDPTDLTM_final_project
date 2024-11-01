@@ -2140,3 +2140,171 @@ Traceback (most recent call last):
 ImportError: cannot import name 'PythonOperator' from 'airflow.operators' (/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/__init__.py)
 [2024-11-01T12:40:59.504+0000] {processor.py:927} WARNING - No viable dags retrieved from /opt/airflow/dags/vietstock crawler_dag.py
 [2024-11-01T12:40:59.522+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/vietstock crawler_dag.py took 0.031 seconds
+[2024-11-01T12:41:30.096+0000] {processor.py:186} INFO - Started process (PID=4216) to work on /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:41:30.096+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/vietstock crawler_dag.py for tasks to queue
+[2024-11-01T12:41:30.098+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:41:30.098+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:41:30.100+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:41:30.099+0000] {dagbag.py:387} ERROR - Failed to import: /opt/airflow/dags/vietstock crawler_dag.py
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/dagbag.py", line 383, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/airflow/dags/vietstock crawler_dag.py", line 3, in <module>
+    from airflow.operators import PythonOperator
+ImportError: cannot import name 'PythonOperator' from 'airflow.operators' (/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/__init__.py)
+[2024-11-01T12:41:30.101+0000] {processor.py:927} WARNING - No viable dags retrieved from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:41:30.117+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/vietstock crawler_dag.py took 0.025 seconds
+[2024-11-01T12:42:00.973+0000] {processor.py:186} INFO - Started process (PID=4281) to work on /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:42:00.974+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/vietstock crawler_dag.py for tasks to queue
+[2024-11-01T12:42:00.975+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:42:00.975+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:42:00.978+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:42:00.976+0000] {dagbag.py:387} ERROR - Failed to import: /opt/airflow/dags/vietstock crawler_dag.py
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/dagbag.py", line 383, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/airflow/dags/vietstock crawler_dag.py", line 3, in <module>
+    from airflow.operators import PythonOperator
+ImportError: cannot import name 'PythonOperator' from 'airflow.operators' (/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/__init__.py)
+[2024-11-01T12:42:00.980+0000] {processor.py:927} WARNING - No viable dags retrieved from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:42:00.993+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/vietstock crawler_dag.py took 0.025 seconds
+[2024-11-01T12:42:31.785+0000] {processor.py:186} INFO - Started process (PID=4346) to work on /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:42:31.786+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/vietstock crawler_dag.py for tasks to queue
+[2024-11-01T12:42:31.789+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:42:31.788+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:42:31.794+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:42:31.792+0000] {dagbag.py:387} ERROR - Failed to import: /opt/airflow/dags/vietstock crawler_dag.py
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/dagbag.py", line 383, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/airflow/dags/vietstock crawler_dag.py", line 3, in <module>
+    from airflow.operators import PythonOperator
+ImportError: cannot import name 'PythonOperator' from 'airflow.operators' (/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/__init__.py)
+[2024-11-01T12:42:31.795+0000] {processor.py:927} WARNING - No viable dags retrieved from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:42:31.815+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/vietstock crawler_dag.py took 0.034 seconds
+[2024-11-01T12:43:02.159+0000] {processor.py:186} INFO - Started process (PID=4411) to work on /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:43:02.160+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/vietstock crawler_dag.py for tasks to queue
+[2024-11-01T12:43:02.161+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:43:02.161+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:43:02.165+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:43:02.163+0000] {dagbag.py:387} ERROR - Failed to import: /opt/airflow/dags/vietstock crawler_dag.py
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/dagbag.py", line 383, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/airflow/dags/vietstock crawler_dag.py", line 3, in <module>
+    from airflow.operators import PythonOperator
+ImportError: cannot import name 'PythonOperator' from 'airflow.operators' (/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/__init__.py)
+[2024-11-01T12:43:02.166+0000] {processor.py:927} WARNING - No viable dags retrieved from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:43:02.185+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/vietstock crawler_dag.py took 0.030 seconds
+[2024-11-01T12:43:32.401+0000] {processor.py:186} INFO - Started process (PID=4477) to work on /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:43:32.402+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/vietstock crawler_dag.py for tasks to queue
+[2024-11-01T12:43:32.404+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:43:32.403+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:43:32.409+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:43:32.406+0000] {dagbag.py:387} ERROR - Failed to import: /opt/airflow/dags/vietstock crawler_dag.py
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/dagbag.py", line 383, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/airflow/dags/vietstock crawler_dag.py", line 3, in <module>
+    from airflow.operators import PythonOperator
+ImportError: cannot import name 'PythonOperator' from 'airflow.operators' (/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/__init__.py)
+[2024-11-01T12:43:32.410+0000] {processor.py:927} WARNING - No viable dags retrieved from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:43:32.425+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/vietstock crawler_dag.py took 0.028 seconds
+[2024-11-01T12:44:02.450+0000] {processor.py:186} INFO - Started process (PID=4542) to work on /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:44:02.452+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/vietstock crawler_dag.py for tasks to queue
+[2024-11-01T12:44:02.454+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:44:02.453+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:44:02.457+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:44:02.455+0000] {dagbag.py:387} ERROR - Failed to import: /opt/airflow/dags/vietstock crawler_dag.py
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/dagbag.py", line 383, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/airflow/dags/vietstock crawler_dag.py", line 3, in <module>
+    from airflow.operators import PythonOperator
+ImportError: cannot import name 'PythonOperator' from 'airflow.operators' (/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/__init__.py)
+[2024-11-01T12:44:02.459+0000] {processor.py:927} WARNING - No viable dags retrieved from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:44:02.475+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/vietstock crawler_dag.py took 0.029 seconds
+[2024-11-01T12:44:32.767+0000] {processor.py:186} INFO - Started process (PID=4607) to work on /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:44:32.768+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/vietstock crawler_dag.py for tasks to queue
+[2024-11-01T12:44:32.770+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:44:32.770+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:44:32.774+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:44:32.771+0000] {dagbag.py:387} ERROR - Failed to import: /opt/airflow/dags/vietstock crawler_dag.py
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/dagbag.py", line 383, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/airflow/dags/vietstock crawler_dag.py", line 3, in <module>
+    from airflow.operators import PythonOperator
+ImportError: cannot import name 'PythonOperator' from 'airflow.operators' (/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/__init__.py)
+[2024-11-01T12:44:32.776+0000] {processor.py:927} WARNING - No viable dags retrieved from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:44:32.796+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/vietstock crawler_dag.py took 0.033 seconds
+[2024-11-01T12:45:03.029+0000] {processor.py:186} INFO - Started process (PID=4672) to work on /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:45:03.030+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/vietstock crawler_dag.py for tasks to queue
+[2024-11-01T12:45:03.032+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:45:03.032+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:45:03.036+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:45:03.034+0000] {dagbag.py:387} ERROR - Failed to import: /opt/airflow/dags/vietstock crawler_dag.py
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/dagbag.py", line 383, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/airflow/dags/vietstock crawler_dag.py", line 3, in <module>
+    from airflow.operators import PythonOperator
+ImportError: cannot import name 'PythonOperator' from 'airflow.operators' (/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/__init__.py)
+[2024-11-01T12:45:03.037+0000] {processor.py:927} WARNING - No viable dags retrieved from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:45:03.052+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/vietstock crawler_dag.py took 0.032 seconds
+[2024-11-01T12:45:33.209+0000] {processor.py:186} INFO - Started process (PID=4737) to work on /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:45:33.210+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/vietstock crawler_dag.py for tasks to queue
+[2024-11-01T12:45:33.213+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:45:33.212+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:45:33.219+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:45:33.216+0000] {dagbag.py:387} ERROR - Failed to import: /opt/airflow/dags/vietstock crawler_dag.py
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/dagbag.py", line 383, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/airflow/dags/vietstock crawler_dag.py", line 3, in <module>
+    from airflow.operators import PythonOperator
+ImportError: cannot import name 'PythonOperator' from 'airflow.operators' (/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/__init__.py)
+[2024-11-01T12:45:33.220+0000] {processor.py:927} WARNING - No viable dags retrieved from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:45:33.243+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/vietstock crawler_dag.py took 0.039 seconds
+[2024-11-01T12:46:03.349+0000] {processor.py:186} INFO - Started process (PID=4801) to work on /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:46:03.349+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/vietstock crawler_dag.py for tasks to queue
+[2024-11-01T12:46:03.352+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:46:03.351+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:46:03.357+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:46:03.354+0000] {dagbag.py:387} ERROR - Failed to import: /opt/airflow/dags/vietstock crawler_dag.py
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/dagbag.py", line 383, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/airflow/dags/vietstock crawler_dag.py", line 3, in <module>
+    from airflow.operators import PythonOperator
+ImportError: cannot import name 'PythonOperator' from 'airflow.operators' (/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/__init__.py)
+[2024-11-01T12:46:03.359+0000] {processor.py:927} WARNING - No viable dags retrieved from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:46:03.374+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/vietstock crawler_dag.py took 0.031 seconds
+[2024-11-01T12:46:23.158+0000] {processor.py:186} INFO - Started process (PID=4856) to work on /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:46:23.159+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/vietstock crawler_dag.py for tasks to queue
+[2024-11-01T12:46:23.160+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:46:23.160+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:46:23.165+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:46:23.164+0000] {dagbag.py:387} ERROR - Failed to import: /opt/airflow/dags/vietstock crawler_dag.py
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/dagbag.py", line 383, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/airflow/dags/vietstock crawler_dag.py", line 9, in <module>
+    from selenium import webdriver
+ModuleNotFoundError: No module named 'selenium'
+[2024-11-01T12:46:23.166+0000] {processor.py:927} WARNING - No viable dags retrieved from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:46:23.180+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/vietstock crawler_dag.py took 0.026 seconds
+[2024-11-01T12:46:53.282+0000] {processor.py:186} INFO - Started process (PID=4919) to work on /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:46:53.283+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/vietstock crawler_dag.py for tasks to queue
+[2024-11-01T12:46:53.285+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:46:53.285+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:46:53.292+0000] {logging_mixin.py:190} INFO - [2024-11-01T12:46:53.288+0000] {dagbag.py:387} ERROR - Failed to import: /opt/airflow/dags/vietstock crawler_dag.py
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/dagbag.py", line 383, in parse
+    loader.exec_module(new_module)
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/airflow/dags/vietstock crawler_dag.py", line 9, in <module>
+    from selenium import webdriver
+ModuleNotFoundError: No module named 'selenium'
+[2024-11-01T12:46:53.293+0000] {processor.py:927} WARNING - No viable dags retrieved from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-01T12:46:53.311+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/vietstock crawler_dag.py took 0.034 seconds
