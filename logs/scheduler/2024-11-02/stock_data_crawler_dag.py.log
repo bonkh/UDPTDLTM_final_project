@@ -1,0 +1,28 @@
+[2024-11-02T02:04:35.422+0000] {processor.py:186} INFO - Started process (PID=76) to work on /opt/airflow/dags/stock_data_crawler_dag.py
+[2024-11-02T02:04:35.423+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/stock_data_crawler_dag.py for tasks to queue
+[2024-11-02T02:04:35.444+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:04:35.441+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/stock_data_crawler_dag.py
+[2024-11-02T02:04:42.272+0000] {processor.py:925} INFO - DAG(s) 'stock_data_update' retrieved from /opt/airflow/dags/stock_data_crawler_dag.py
+[2024-11-02T02:04:42.293+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:04:42.293+0000] {dag.py:3239} INFO - Sync 1 DAGs
+[2024-11-02T02:04:42.313+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:04:42.313+0000] {dag.py:4180} INFO - Setting next_dagrun for stock_data_update to 2024-11-02 00:00:00+00:00, run_after=2024-11-03 00:00:00+00:00
+[2024-11-02T02:04:42.332+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/stock_data_crawler_dag.py took 6.922 seconds
+[2024-11-02T02:05:35.030+0000] {processor.py:186} INFO - Started process (PID=157) to work on /opt/airflow/dags/stock_data_crawler_dag.py
+[2024-11-02T02:05:35.032+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/stock_data_crawler_dag.py for tasks to queue
+[2024-11-02T02:05:35.040+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:05:35.040+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/stock_data_crawler_dag.py
+[2024-11-02T02:05:38.315+0000] {processor.py:925} INFO - DAG(s) 'stock_data_update' retrieved from /opt/airflow/dags/stock_data_crawler_dag.py
+[2024-11-02T02:05:38.905+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:05:38.883+0000] {dag.py:3239} INFO - Sync 1 DAGs
+[2024-11-02T02:05:39.639+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:05:39.618+0000] {dag.py:4180} INFO - Setting next_dagrun for stock_data_update to 2024-11-02 00:00:00+00:00, run_after=2024-11-03 00:00:00+00:00
+[2024-11-02T02:05:40.438+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/stock_data_crawler_dag.py took 5.420 seconds
+[2024-11-02T02:06:10.855+0000] {processor.py:186} INFO - Started process (PID=235) to work on /opt/airflow/dags/stock_data_crawler_dag.py
+[2024-11-02T02:06:10.855+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/stock_data_crawler_dag.py for tasks to queue
+[2024-11-02T02:06:10.857+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:06:10.857+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/stock_data_crawler_dag.py
+[2024-11-02T02:06:15.052+0000] {processor.py:925} INFO - DAG(s) 'stock_data_update' retrieved from /opt/airflow/dags/stock_data_crawler_dag.py
+[2024-11-02T02:06:15.067+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:06:15.066+0000] {dag.py:3239} INFO - Sync 1 DAGs
+[2024-11-02T02:06:15.090+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:06:15.090+0000] {dag.py:4180} INFO - Setting next_dagrun for stock_data_update to 2024-11-02 00:00:00+00:00, run_after=2024-11-03 00:00:00+00:00
+[2024-11-02T02:06:15.105+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/stock_data_crawler_dag.py took 4.257 seconds
+[2024-11-02T02:06:45.360+0000] {processor.py:186} INFO - Started process (PID=302) to work on /opt/airflow/dags/stock_data_crawler_dag.py
+[2024-11-02T02:06:45.361+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/stock_data_crawler_dag.py for tasks to queue
+[2024-11-02T02:06:45.362+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:06:45.362+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/stock_data_crawler_dag.py
+[2024-11-02T02:06:54.942+0000] {processor.py:925} INFO - DAG(s) 'stock_data_update' retrieved from /opt/airflow/dags/stock_data_crawler_dag.py
+[2024-11-02T02:06:54.953+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:06:54.952+0000] {dag.py:3239} INFO - Sync 1 DAGs
+[2024-11-02T02:06:54.985+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:06:54.984+0000] {dag.py:4180} INFO - Setting next_dagrun for stock_data_update to 2024-11-02 00:00:00+00:00, run_after=2024-11-03 00:00:00+00:00
+[2024-11-02T02:06:55.007+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/stock_data_crawler_dag.py took 9.654 seconds

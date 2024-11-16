@@ -1,7 +1,7 @@
 import pandas as pd
 from sqlalchemy import create_engine, text
 
-engine = create_engine('postgresql+psycopg2://caokhoi:m6ikFt3TKwnkV75fNZ2FBdKiEHKEu1sN@dpg-cs87v7m8ii6s73c5m19g-a.singapore-postgres.render.com:5432/stock_data_01')
+engine = create_engine('postgresql://stock_data_i36c_user:YLMLHhfjF7oIdi3SMzexVaobFuaL37Dc@dpg-csro9ppu0jms73e1epb0-a.singapore-postgres.render.com/stock_data_i36c')
 
 create_table_query = """
 CREATE TABLE IF NOT EXISTS stock_data (
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS stock_data (
     floor_price DECIMAL(10, 2),
     total_trading_volume BIGINT,
     total_trading_value DECIMAL(15, 2),
-    market_capitalizaiton DECIMAL(15, 2),
+    market_capitalization DECIMAL(15, 2),
     opening_price DECIMAL(10, 2),
     closing_price DECIMAL(10, 2),
     highest_price DECIMAL(10, 2),
@@ -28,13 +28,13 @@ CREATE TABLE IF NOT EXISTS stock_data (
     average_sell_price DECIMAL(10, 2),
     buy_limit BIGINT,
     sell_limit BIGINT,
-    matched_orders_volumne BIGINT,
+    matched_orders_volume BIGINT,
     matched_orders_value BIGINT,
     total_orders_placed_buy BIGINT,
     total_orders_placed_sell BIGINT,
     total_volume_placed_buy BIGINT,
     total_volume_placed_sell BIGINT,
-    agreements_volumne DECIMAL(15, 2),
+    agreements_volume DECIMAL(15, 2),
     agreements_value DECIMAL(15, 2),
     PRIMARY KEY (trade_date, stock_code)
 );

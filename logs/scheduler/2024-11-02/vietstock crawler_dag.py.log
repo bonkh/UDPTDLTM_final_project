@@ -1,0 +1,28 @@
+[2024-11-02T02:04:34.677+0000] {processor.py:186} INFO - Started process (PID=69) to work on /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-02T02:04:34.679+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/vietstock crawler_dag.py for tasks to queue
+[2024-11-02T02:04:34.694+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:04:34.686+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-02T02:04:35.043+0000] {processor.py:925} INFO - DAG(s) 'vietstock_article_crawler' retrieved from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-02T02:04:35.223+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:04:35.222+0000] {dag.py:3239} INFO - Sync 1 DAGs
+[2024-11-02T02:04:35.297+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:04:35.296+0000] {dag.py:4180} INFO - Setting next_dagrun for vietstock_article_crawler to 2024-11-02 00:00:00+00:00, run_after=2024-11-03 00:00:00+00:00
+[2024-11-02T02:04:35.348+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/vietstock crawler_dag.py took 0.682 seconds
+[2024-11-02T02:05:07.621+0000] {processor.py:186} INFO - Started process (PID=134) to work on /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-02T02:05:07.827+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/vietstock crawler_dag.py for tasks to queue
+[2024-11-02T02:05:08.946+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:05:08.592+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-02T02:05:33.223+0000] {processor.py:925} INFO - DAG(s) 'vietstock_article_crawler' retrieved from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-02T02:05:33.345+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:05:33.336+0000] {dag.py:3239} INFO - Sync 1 DAGs
+[2024-11-02T02:05:33.429+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:05:33.428+0000] {dag.py:4180} INFO - Setting next_dagrun for vietstock_article_crawler to 2024-11-02 00:00:00+00:00, run_after=2024-11-03 00:00:00+00:00
+[2024-11-02T02:05:33.472+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/vietstock crawler_dag.py took 26.883 seconds
+[2024-11-02T02:06:04.309+0000] {processor.py:186} INFO - Started process (PID=206) to work on /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-02T02:06:04.310+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/vietstock crawler_dag.py for tasks to queue
+[2024-11-02T02:06:04.313+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:06:04.313+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-02T02:06:04.394+0000] {processor.py:925} INFO - DAG(s) 'vietstock_article_crawler' retrieved from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-02T02:06:04.411+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:06:04.411+0000] {dag.py:3239} INFO - Sync 1 DAGs
+[2024-11-02T02:06:04.438+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:06:04.438+0000] {dag.py:4180} INFO - Setting next_dagrun for vietstock_article_crawler to 2024-11-02 00:00:00+00:00, run_after=2024-11-03 00:00:00+00:00
+[2024-11-02T02:06:04.454+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/vietstock crawler_dag.py took 0.152 seconds
+[2024-11-02T02:06:34.668+0000] {processor.py:186} INFO - Started process (PID=272) to work on /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-02T02:06:34.668+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/vietstock crawler_dag.py for tasks to queue
+[2024-11-02T02:06:34.670+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:06:34.670+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-02T02:06:34.741+0000] {processor.py:925} INFO - DAG(s) 'vietstock_article_crawler' retrieved from /opt/airflow/dags/vietstock crawler_dag.py
+[2024-11-02T02:06:34.760+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:06:34.759+0000] {dag.py:3239} INFO - Sync 1 DAGs
+[2024-11-02T02:06:34.787+0000] {logging_mixin.py:190} INFO - [2024-11-02T02:06:34.786+0000] {dag.py:4180} INFO - Setting next_dagrun for vietstock_article_crawler to 2024-11-02 00:00:00+00:00, run_after=2024-11-03 00:00:00+00:00
+[2024-11-02T02:06:34.819+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/vietstock crawler_dag.py took 0.156 seconds

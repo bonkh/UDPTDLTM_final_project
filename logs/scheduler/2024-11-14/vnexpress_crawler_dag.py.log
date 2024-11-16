@@ -1,0 +1,35 @@
+[2024-11-14T07:08:21.824+0000] {processor.py:186} INFO - Started process (PID=70) to work on /opt/airflow/dags/vnexpress_crawler_dag.py
+[2024-11-14T07:08:21.825+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/vnexpress_crawler_dag.py for tasks to queue
+[2024-11-14T07:08:21.828+0000] {logging_mixin.py:190} INFO - [2024-11-14T07:08:21.828+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/vnexpress_crawler_dag.py
+[2024-11-14T07:08:22.735+0000] {processor.py:925} INFO - DAG(s) 'vnexpress_article_crawler' retrieved from /opt/airflow/dags/vnexpress_crawler_dag.py
+[2024-11-14T07:08:22.858+0000] {logging_mixin.py:190} INFO - [2024-11-14T07:08:22.857+0000] {dag.py:3239} INFO - Sync 1 DAGs
+[2024-11-14T07:08:22.912+0000] {logging_mixin.py:190} INFO - [2024-11-14T07:08:22.912+0000] {dag.py:4180} INFO - Setting next_dagrun for vnexpress_article_crawler to 2024-11-03 00:00:00+00:00, run_after=2024-11-04 00:00:00+00:00
+[2024-11-14T07:08:22.940+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/vnexpress_crawler_dag.py took 1.126 seconds
+[2024-11-14T07:12:01.038+0000] {processor.py:186} INFO - Started process (PID=127) to work on /opt/airflow/dags/vnexpress_crawler_dag.py
+[2024-11-14T07:12:01.043+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/vnexpress_crawler_dag.py for tasks to queue
+[2024-11-14T07:12:01.045+0000] {logging_mixin.py:190} INFO - [2024-11-14T07:12:01.045+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/vnexpress_crawler_dag.py
+[2024-11-14T07:12:01.824+0000] {processor.py:925} INFO - DAG(s) 'vnexpress_article_crawler' retrieved from /opt/airflow/dags/vnexpress_crawler_dag.py
+[2024-11-14T07:12:01.863+0000] {logging_mixin.py:190} INFO - [2024-11-14T07:12:01.862+0000] {taskinstance.py:3312} ERROR - {'DAG Id': 'vnexpress_article_crawler', 'Task Id': 'vnexpress_article_crawler', 'Run Id': 'scheduled__2024-11-01T00:00:00+00:00', 'Hostname': 'd39b318f47fd', 'External Executor Id': '8dd25292-281a-4565-b07e-caac6ffc9084'}
+[2024-11-14T07:12:01.904+0000] {logging_mixin.py:190} INFO - Task instance in failure state
+[2024-11-14T07:12:01.905+0000] {logging_mixin.py:190} INFO - Task start:2024-11-02 02:04:41.042191+00:00 end:2024-11-14 07:12:01.903856+00:00 duration:1055240.861665
+[2024-11-14T07:12:01.906+0000] {logging_mixin.py:190} INFO - Task:<Task(PythonOperator): vnexpress_article_crawler> dag:<DAG: vnexpress_article_crawler> dagrun:<DagRun vnexpress_article_crawler @ 2024-11-01 00:00:00+00:00: scheduled__2024-11-01T00:00:00+00:00, state:running, queued_at: 2024-11-02 02:04:34.609019+00:00. externally triggered: False>
+[2024-11-14T07:12:01.906+0000] {logging_mixin.py:190} INFO - Failure caused by {'DAG Id': 'vnexpress_article_crawler', 'Task Id': 'vnexpress_article_crawler', 'Run Id': 'scheduled__2024-11-01T00:00:00+00:00', 'Hostname': 'd39b318f47fd', 'External Executor Id': '8dd25292-281a-4565-b07e-caac6ffc9084'}
+[2024-11-14T07:12:01.907+0000] {logging_mixin.py:190} INFO - [2024-11-14T07:12:01.906+0000] {taskinstance.py:1225} INFO - Marking task as UP_FOR_RETRY. dag_id=vnexpress_article_crawler, task_id=vnexpress_article_crawler, run_id=scheduled__2024-11-01T00:00:00+00:00, execution_date=20241101T000000, start_date=20241102T020441, end_date=20241114T071201
+[2024-11-14T07:12:01.931+0000] {logging_mixin.py:190} INFO - [2024-11-14T07:12:01.931+0000] {processor.py:876} INFO - Executed callback for <TaskInstance: vnexpress_article_crawler.vnexpress_article_crawler scheduled__2024-11-01T00:00:00+00:00 [up_for_retry]> in state up_for_retry
+[2024-11-14T07:12:01.948+0000] {logging_mixin.py:190} INFO - [2024-11-14T07:12:01.947+0000] {dag.py:3239} INFO - Sync 1 DAGs
+[2024-11-14T07:12:01.993+0000] {logging_mixin.py:190} INFO - [2024-11-14T07:12:01.993+0000] {dag.py:4180} INFO - Setting next_dagrun for vnexpress_article_crawler to 2024-11-11 00:00:00+00:00, run_after=2024-11-12 00:00:00+00:00
+[2024-11-14T07:12:02.018+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/vnexpress_crawler_dag.py took 0.989 seconds
+[2024-11-14T07:17:12.990+0000] {processor.py:186} INFO - Started process (PID=52) to work on /opt/airflow/dags/vnexpress_crawler_dag.py
+[2024-11-14T07:17:12.991+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/vnexpress_crawler_dag.py for tasks to queue
+[2024-11-14T07:17:12.992+0000] {logging_mixin.py:190} INFO - [2024-11-14T07:17:12.992+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/vnexpress_crawler_dag.py
+[2024-11-14T07:17:13.336+0000] {processor.py:925} INFO - DAG(s) 'vnexpress_article_crawler' retrieved from /opt/airflow/dags/vnexpress_crawler_dag.py
+[2024-11-14T07:17:13.373+0000] {logging_mixin.py:190} INFO - [2024-11-14T07:17:13.372+0000] {dag.py:3239} INFO - Sync 1 DAGs
+[2024-11-14T07:17:13.416+0000] {logging_mixin.py:190} INFO - [2024-11-14T07:17:13.416+0000] {dag.py:4180} INFO - Setting next_dagrun for vnexpress_article_crawler to 2024-11-14 00:00:00+00:00, run_after=2024-11-15 00:00:00+00:00
+[2024-11-14T07:17:13.458+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/vnexpress_crawler_dag.py took 0.473 seconds
+[2024-11-14T07:17:44.106+0000] {processor.py:186} INFO - Started process (PID=123) to work on /opt/airflow/dags/vnexpress_crawler_dag.py
+[2024-11-14T07:17:44.107+0000] {processor.py:914} INFO - Processing file /opt/airflow/dags/vnexpress_crawler_dag.py for tasks to queue
+[2024-11-14T07:17:44.108+0000] {logging_mixin.py:190} INFO - [2024-11-14T07:17:44.108+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags/vnexpress_crawler_dag.py
+[2024-11-14T07:17:44.255+0000] {processor.py:925} INFO - DAG(s) 'vnexpress_article_crawler' retrieved from /opt/airflow/dags/vnexpress_crawler_dag.py
+[2024-11-14T07:17:44.271+0000] {logging_mixin.py:190} INFO - [2024-11-14T07:17:44.270+0000] {dag.py:3239} INFO - Sync 1 DAGs
+[2024-11-14T07:17:44.291+0000] {logging_mixin.py:190} INFO - [2024-11-14T07:17:44.291+0000] {dag.py:4180} INFO - Setting next_dagrun for vnexpress_article_crawler to 2024-11-14 00:00:00+00:00, run_after=2024-11-15 00:00:00+00:00
+[2024-11-14T07:17:44.306+0000] {processor.py:208} INFO - Processing /opt/airflow/dags/vnexpress_crawler_dag.py took 0.205 seconds

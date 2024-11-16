@@ -1,4 +1,6 @@
-selenium
+cloudscraper
+beautifulsoup4
+psycopg2-binary
+sqlalchemy
 newspaper3k
-webdriver_manager
 lxml[html_clean]

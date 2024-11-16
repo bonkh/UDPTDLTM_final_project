@@ -4,13 +4,14 @@ from sqlalchemy import create_engine, text
 engine = create_engine('postgresql+psycopg2://caokhoi:m6ikFt3TKwnkV75fNZ2FBdKiEHKEu1sN@dpg-cs87v7m8ii6s73c5m19g-a.singapore-postgres.render.com:5432/stock_data_01')
 
 df = pd.read_csv('corporate_data.csv')
-df_filtered = df[['CatID', 'Exchange', 'IndustryName', 'Code', 'Name']]
+df_filtered = df[['CatID', 'Exchange', 'IndustryName', 'Code', 'Name', 'URL']]
 df_filtered.rename(columns={
     'CatID': 'cat_id',
     'Exchange': 'exchange',
     'IndustryName': 'industry_name',
     'Code': 'code',
-    'Name': 'name'
+    'Name': 'name',
+    'URL' : 'url'
 }, inplace=True)
 
 create_table_query = """
@@ -19,7 +20,8 @@ CREATE TABLE IF NOT EXISTS stock_info (
     exchange VARCHAR(50),
     industry_name VARCHAR(200),
     code VARCHAR(50) PRIMARY KEY,
-    name VARCHAR(200)
+    name VARCHAR(200),
+    url VARCHAR(200)
 );
 """
 
