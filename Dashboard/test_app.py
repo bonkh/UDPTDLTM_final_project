@@ -180,6 +180,9 @@ if selected_tab == "Market Overview":
 
         st.plotly_chart(index_fig, use_container_width=True)
 
+    with col_2:
+        st.table(stock_index.head(10))
+
 
 
 
