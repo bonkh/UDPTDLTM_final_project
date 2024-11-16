@@ -4,8 +4,8 @@ FROM apache/airflow:2.10.2
 # Set the working directory
 WORKDIR /opt/airflow
 
-# Copy the requirements.txt file into the container
+# Copy the requirements.txt file
 COPY requirements.txt .
 
-# Install the required packages
+# Install the Python packages from requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt

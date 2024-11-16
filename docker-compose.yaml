@@ -49,8 +49,8 @@ x-airflow-common:
   # In order to add custom dependencies or upgrade provider packages you can use your extended image.
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
-  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.10.2}
-  # build: .
+  # image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.10.2}
+  build: .
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
@@ -116,15 +116,14 @@ services:
     restart: always
 
   airflow-webserver:
+    # image: airflow_image:latest
     build:
-      context: .  # Directory containing your Dockerfile and requirements.txt
+      context: .  
       dockerfile: Dockerfile 
     <<: *airflow-common
     command: webserver
     environment:
       <<: *airflow-common-env
-      # Add the following lines for Selenium
-      SELENIUM_CACHE_DIR: /tmp/.cache/selenium
     ports:
       - "8080:8080"
     healthcheck:
@@ -140,6 +139,7 @@ services:
         condition: service_completed_successfully
 
   airflow-scheduler:
+    # image: airflow_image:latest
     build:
       context: .  # Directory containing your Dockerfile and requirements.txt
       dockerfile: Dockerfile 
@@ -158,6 +158,7 @@ services:
         condition: service_completed_successfully
 
   airflow-worker:
+    # image: airflow_image:latest
     build:
       context: .  # Directory containing your Dockerfile and requirements.txt
       dockerfile: Dockerfile 

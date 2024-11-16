@@ -1,3 +1,4 @@
+
 import re
 import requests
 import pandas as pd
@@ -18,7 +19,7 @@ from datetime import datetime, timedelta
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Connect to PostgreSQL database
-engine = create_engine('postgresql+psycopg2://caokhoi:m6ikFt3TKwnkV75fNZ2FBdKiEHKEu1sN@dpg-cs87v7m8ii6s73c5m19g-a.singapore-postgres.render.com:5432/stock_data_01')
+engine = create_engine('postgresql://stock_data_i36c_user:YLMLHhfjF7oIdi3SMzexVaobFuaL37Dc@dpg-csro9ppu0jms73e1epb0-a.singapore-postgres.render.com/stock_data_i36c')
 
 def fetch_page(url, retries=3, delay=3):
     for attempt in range(retries):
@@ -201,7 +202,7 @@ def main():
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': datetime(2024, 11, 1),
+    'start_date': datetime.now() - timedelta(days=1),
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
 }
