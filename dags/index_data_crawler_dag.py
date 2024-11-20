@@ -1,12 +1,16 @@
 import requests
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from sqlalchemy import create_engine, text
 from functools import partial
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from airflow.utils.dates import days_ago
+from datetime import datetime
+import logging
 
-# API and database configuration
 url = 'https://finance.vietstock.vn/data/KQGDThongKeGiaStockPaging'
 headers = {
     'Accept': '*/*',
@@ -161,13 +165,49 @@ def fetch_and_insert_data(index_name, catID, stockID):
     except Exception as e:
         logging.error(f"Failed to insert data for {index_name}: {e}")
 
-# Parallel processing using ThreadPoolExecutor
-with ThreadPoolExecutor(max_workers=5) as executor:
-    # Create a partial function for passing arguments
-    futures = [executor.submit(fetch_and_insert_data, index_name, catID, stockID)
-               for index_name, (catID, stockID) in indices.items()]
-
-    for future in futures:
-        future.result()  # Wait for all tasks to complete
+def fetch_process_insert_data():
+    # Call the existing code logic here
+    try:
+        # The entire logic for stock data extraction, processing, and insertion
+        logging.info("Starting the extraction process.")
+        
+        # Assuming `fetch_and_insert_data` is a function you've defined
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            # Create a partial function for passing arguments
+            futures = [executor.submit(fetch_and_insert_data, index_name, catID, stockID)
+                    for index_name, (catID, stockID) in indices.items()]
+            for future in futures:
+                future.result()  # Wait for all tasks to complete
+                
+        logging.info("Data extraction and insertion completed successfully.")
+    except Exception as e:
+        logging.error(f"An error occurred during data processing: {e}")
+        raise  # Raise the exception to mark the task as failed in Airflow
 
 logging.info("Data extraction and insertion completed!")
+
+default_args = {
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
+    'catchup': False,
+}
+
+dag = DAG(
+    'stock_index_data_crawler',
+    default_args=default_args,
+    description='Fetch, process, and insert stock data',
+    schedule_interval='0 0 * * *',
+    start_date=datetime(2024, 10, 1, 0, 0),
+)
+
+crawl_task = PythonOperator(
+    task_id='fetch_process_insert_stock_data',
+    python_callable=fetch_process_insert_data,
+    dag=dag,
+    retries=1,  
+    retry_delay=timedelta(minutes=5),  # Retry delay
+)
+
+crawl_task

@@ -2,24 +2,25 @@
 import re
 import requests
 import pandas as pd
+import logging
+import time
 from bs4 import BeautifulSoup
 from sqlalchemy import create_engine
 from datetime import datetime
-import time
 from newspaper import Article
 import urllib.request
 from urllib.error import URLError
 from sqlalchemy.dialects.postgresql import insert
-import logging
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
-# Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Connect to PostgreSQL database
-engine = create_engine('postgresql://stock_data_i36c_user:YLMLHhfjF7oIdi3SMzexVaobFuaL37Dc@dpg-csro9ppu0jms73e1epb0-a.singapore-postgres.render.com/stock_data_i36c')
+conn_str = 'postgresql://stock_data_i36c_user:YLMLHhfjF7oIdi3SMzexVaobFuaL37Dc@dpg-csro9ppu0jms73e1epb0-a.singapore-postgres.render.com/stock_data_i36c'
+engine = create_engine(conn_str)
+
 
 def fetch_page(url, retries=3, delay=3):
     for attempt in range(retries):
@@ -29,6 +30,7 @@ def fetch_page(url, retries=3, delay=3):
         except URLError as e:
             logging.warning(f"Attempt {attempt + 1} failed for {url}: {e}")
             time.sleep(delay)
+    logging.error(f"Failed to fetch {url} after {retries} attempts.")
     return None
 
 def get_links_in_page_vnexpress(url):
@@ -88,7 +90,7 @@ def crawl_by_url(url, retries=3, backoff_factor=0.3):
             response = requests.get(url, headers=headers, allow_redirects=False)
             if response.status_code == 200:
                 soup = BeautifulSoup(response.text, 'html.parser')
-                # date = normalize_date(soup.find('span', class_='date').text) if soup.find('span', class_='date') else None
+                
                 if soup.find('span', class_='date'):
                     date = soup.find('span', class_='date').text
                     date = normalize_date(date)
@@ -101,47 +103,38 @@ def crawl_by_url(url, retries=3, backoff_factor=0.3):
                 article.parse()
 
                 content = str(article.text).strip()
-                return date, content
+                return {'link': url, 'date': date, 'content': content}
             else:
                 logging.error(f"Failed to crawl {url}, status code: {response.status_code}")
 
         except requests.exceptions.RequestException as e:
             logging.error(f"Error during crawling {url}: {e}")
             time.sleep(backoff_factor * (2 ** attempt))
-    return None, None
+    return None
 
-def process(df):
 
-    for index, row in df.iterrows():
-        logging.info(f"Processing {index + 1}/{df.shape[0]}: {row['link']}")
-        date, content = crawl_by_url(row['link'])
-        df.at[index, 'date'] = date
-        df.at[index, 'content'] = content
-    return df
+def get_existing_links():
 
-def get_existing_articles():
     try:
-        query = "SELECT title, date FROM article"
+        query = "SELECT link FROM article"
         with engine.connect() as connection:
             result = connection.execute(query)
-            existing_articles = set((row['title'], row['date']) for row in result)
-        return existing_articles
+            existing_links = {row['link'] for row in result}
+        return existing_links
     except Exception as e:
-        logging.error(f"Error fetching existing articles: {e}")
+        logging.error(f"Error fetching existing links: {e}")
         return set()
 
+def filter_new_links(all_links, existing_links):
 
-def filter_new_articles(df):
     try:
-        existing_articles = get_existing_articles()
-        df['date'] = pd.to_datetime(df['date']).dt.date
-        df['title'] = df['title'].str.strip()
-        new_df = df[~df[['title', 'date']].apply(tuple, axis=1).isin(existing_articles)]
-        return new_df
+        all_links_set = set(all_links)
+        new_links = all_links_set - existing_links
+        return list(new_links)
     except Exception as e:
-        logging.error(f"Error filtering new articles: {e}")
-        return pd.DataFrame()
-    
+        logging.error(f"Error filtering new links: {e}")
+        return []
+
 def insert_articles_to_db(new_articles_df):
     try:
         with engine.connect() as connection:
@@ -165,44 +158,67 @@ def count_articles():
         count = result.scalar()
     return count
 
+def crawl_and_save_new_links(new_links):
+
+    try:
+        data_to_insert = [] 
+
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            # Submit the crawl tasks to the executor
+            future_to_url = {executor.submit(crawl_by_url, link): link for link in new_links}
+            
+            # Process the results as they are completed
+            for future in as_completed(future_to_url):
+                link = future_to_url[future]
+                try:
+                    result = future.result()
+                    if result['date'] and result['content']:
+                        data_to_insert.append(result)
+                    else:
+                        logging.warning(f"No content for link {link}")
+                except Exception as e:
+                    logging.error(f"Error crawling {link}: {e}")
+    
+        if data_to_insert:
+            new_articles_df = pd.DataFrame(data_to_insert)
+          
+            insert_articles_to_db(new_articles_df)
+        else:
+            logging.info("No valid data to insert.")
+
+    except Exception as e:
+        logging.error(f"Error during crawling and saving new links: {e}")
 
 def main():
     try:
         initial_count = count_articles()
         print(initial_count)
-        df = get_links()
-        df['content'] = ''
-        df['date'] = ''
-
-        # Process a sample of the DataFrame
-        df = process(df)
-        df.dropna(subset=['content', 'date'], inplace=True)
-        print(df['date'])
-
-
-        new_df = filter_new_articles(df)
-
-        if not new_df.empty:
-            insert_articles_to_db(new_df)
-            logging.info("Insertion completed.")
-
-            final_count = count_articles()
-            logging.info(f"Final article count: {final_count}")
-
-            inserted_count = final_count - initial_count
-            logging.info(f"Number of articles inserted: {inserted_count}")
-
-
+        all_links_df = get_links()
+        all_links = all_links_df['link'].tolist()
+        existing_links = get_existing_links()
+        new_links = filter_new_links(all_links, existing_links)
+        
+        if new_links:
+            logging.info(f"Found {len(new_links)} new links to crawl.")
+            crawl_and_save_new_links(new_links)
         else:
-            logging.info("No new articles to insert.")
+            logging.info("No new links to process.")
+        
+        logging.info("Insertion completed.")
+
+        final_count = count_articles()
+        logging.info(f"Final article count: {final_count}")
+
+        inserted_count = final_count - initial_count
+        logging.info(f"Number of articles inserted: {inserted_count}")
+
     except Exception as e:
         logging.error(f"Error in main execution: {e}")
 
-# Define the default args for the DAG
+
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': datetime.now() - timedelta(days=1),
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
 }
@@ -212,7 +228,8 @@ dag = DAG(
     'vnexpress_article_crawler',
     default_args=default_args,
     description='VnExpress article crawling DAG',
-    schedule_interval= '@daily',
+    schedule_interval='0 0 * * *',
+    start_date=datetime(2024, 10, 1, 0, 0),
 )
 
 # Define the tasks
