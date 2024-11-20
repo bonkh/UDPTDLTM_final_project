@@ -10,10 +10,10 @@ from bs4 import BeautifulSoup
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-engine = create_engine('postgresql+psycopg2://caokhoi:m6ikFt3TKwnkV75fNZ2FBdKiEHKEu1sN@dpg-cs87v7m8ii6s73c5m19g-a.singapore-postgres.render.com:5432/stock_data_01')
+conn_str = 'postgresql://stock_data_i36c_user:YLMLHhfjF7oIdi3SMzexVaobFuaL37Dc@dpg-csro9ppu0jms73e1epb0-a.singapore-postgres.render.com/stock_data_i36c'
+engine = create_engine(conn_str)
 
 url = 'https://vietstock.vn/_Partials/GetStockNewsByMarketPaging'
 headers = {
@@ -35,14 +35,14 @@ def get_existing_articles():
         logging.error(f"Error retrieving existing articles from the database: {e}")
         return set()  
 
-# Function to fetch and parse data from the API
+
 def fetch_data():
     titles, contents, links, publish_times, article_ids = [], [], [], [], []
     current_page = 1
     total_pages = None
     stop_fetching = False 
 
-    while total_pages is None or current_page <= 100:
+    while total_pages is None or current_page <= 10:
         data = {
             "item": 15,
             "martket": "1",
@@ -76,7 +76,7 @@ def fetch_data():
             year_match = re.search(r'\b(19[0-9]{2}|20[0-2][0-9])\b', link)
             if year_match and int(year_match.group()) < 2023:
                 logging.info(f"Encountered a URL with a year < 2022: {link}")
-                stop_fetching = True
+                stop_fetching = True ,
                 break  # Stop processing further items in the current page
             
 
@@ -121,27 +121,44 @@ def filter_new_articles(news_df):
         logging.error(f"Error filtering new articles: {e}")
         return news_df
 
+# def insert_articles_to_db(new_articles_df):
+#     try:
+
+#         with engine.connect() as connection:
+#             for _, row in new_articles_df.iterrows():
+#                 insert_query = """
+#                 INSERT INTO article (title, link, content, date)
+#                 VALUES (%s, %s, %s, %s)
+#                 """
+#                 try:
+#                     connection.execute(insert_query, (row['title'], row['link'], row['content'], row['date']))
+#                 except SQLAlchemyError as e:
+#                     logging.error(f"Error inserting article '{row['title']}': {e}")
+#     except SQLAlchemyError as e:
+#         logging.error(f"Database insertion error: {e}")
+
 def insert_articles_to_db(new_articles_df):
+
+    engine = create_engine(conn_str)
     try:
-        # Open a new connection for each insertion
         with engine.connect() as connection:
-            for _, row in new_articles_df.iterrows():
-                insert_query = """
-                INSERT INTO article (title, link, content, date)
-                VALUES (%s, %s, %s, %s)
-                """
-                try:
-                    connection.execute(insert_query, (row['title'], row['link'], row['content'], row['date']))
-                except SQLAlchemyError as e:
-                    logging.error(f"Error inserting article '{row['title']}': {e}")
+            insert_query = """
+            INSERT INTO article (title, link, content, date)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (title, date) DO NOTHING
+            """
+            values = list(new_articles_df[['title', 'link', 'content', 'date']].itertuples(index=False, name=None))
+            connection.execute(insert_query, values)
     except SQLAlchemyError as e:
         logging.error(f"Database insertion error: {e}")
 
-# Main process
+
+initial_count_query = "SELECT COUNT(*) FROM article"
+
 def main():
     try:
-        # Initial article count
-        initial_count_query = "SELECT COUNT(*) FROM article"
+
+        
         with engine.connect() as conn:
             initial_count = conn.execute(initial_count_query).scalar()
             logging.info(f"Initial article count: {initial_count}")
@@ -152,11 +169,9 @@ def main():
 
         if not new_articles_df.empty:
             insert_articles_to_db(new_articles_df)
+            logging.info(f"Insert complete.")
 
-            # Final article count after insertion
-            final_count = conn.execute(initial_count_query).scalar()
-            inserted_count = final_count - initial_count
-            logging.info(f"Inserted {inserted_count} new articles.")
+            time.sleep(10)
         else:
             logging.info("No new articles to insert.")
     except Exception as e:
