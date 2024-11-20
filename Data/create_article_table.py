@@ -1,7 +1,13 @@
 from sqlalchemy import create_engine, Column, String, Date, PrimaryKeyConstraint, Table, MetaData
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+# PostgreSQL connection string
+conn_str = os.getenv('DATABASE_RENDER')
 
 # Connect to PostgreSQL
-engine = create_engine('postgresql://stock_data_i36c_user:YLMLHhfjF7oIdi3SMzexVaobFuaL37Dc@dpg-csro9ppu0jms73e1epb0-a.singapore-postgres.render.com/stock_data_i36c')
+engine = create_engine(conn_str)
 
 create_article_table_query = """
 CREATE TABLE IF NOT EXISTS article (

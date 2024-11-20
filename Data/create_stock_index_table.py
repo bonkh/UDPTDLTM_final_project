@@ -1,9 +1,14 @@
 import pandas as pd
 from datetime import datetime
 from sqlalchemy import create_engine, text
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
+# PostgreSQL connection string
+conn_str = os.getenv('DATABASE_RENDER')
 
-engine = create_engine('postgresql://stock_data_i36c_user:YLMLHhfjF7oIdi3SMzexVaobFuaL37Dc@dpg-csro9ppu0jms73e1epb0-a.singapore-postgres.render.com/stock_data_i36c')
+engine = create_engine(conn_str)
 
 create_table_query = """
                     CREATE TABLE IF NOT EXISTS stock_index (
