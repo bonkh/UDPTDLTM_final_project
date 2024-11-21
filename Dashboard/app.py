@@ -12,22 +12,24 @@ from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, LSTM
 from math import ceil, sqrt
+import datetime
 import warnings
 
 warnings.filterwarnings("ignore")
 
 @st.cache_data 
 def load_stock_data():
-    engine = create_engine('postgresql+psycopg2://caokhoi:m6ikFt3TKwnkV75fNZ2FBdKiEHKEu1sN@dpg-cs87v7m8ii6s73c5m19g-a.singapore-postgres.render.com:5432/stock_data_01')
+    engine = create_engine('postgresql://stock_data_i36c_user:YLMLHhfjF7oIdi3SMzexVaobFuaL37Dc@dpg-csro9ppu0jms73e1epb0-a.singapore-postgres.render.com/stock_data_i36c')
 
     return pd.read_sql("SELECT * FROM stock_data", engine)
 
-def load_stock_info():
-    engine = create_engine('postgresql+psycopg2://caokhoi:m6ikFt3TKwnkV75fNZ2FBdKiEHKEu1sN@dpg-cs87v7m8ii6s73c5m19g-a.singapore-postgres.render.com:5432/stock_data_01')
+# def load_stock_info():
+#     engine = create_engine('postgresql+psycopg2://caokhoi:m6ikFt3TKwnkV75fNZ2FBdKiEHKEu1sN@dpg-cs87v7m8ii6s73c5m19g-a.singapore-postgres.render.com:5432/stock_data_01')
 
-    return pd.read_sql("SELECT * FROM stock_info", engine)
+#     return pd.read_sql("SELECT * FROM stock_info", engine)
 
 data = load_stock_data()
+# stock_info = load_stock_info()
 
 # save csv file to read
 # data.to_csv('./Data/stock_data.csv', index=False)
@@ -35,6 +37,14 @@ data = load_stock_data()
 # print(data.head())
 
 # st.title('DVN Stock Data')
+
+# tính change (%) giữa giá của ngày hôm nay và ngày hôm qua
+# Sắp xếp dữ liệu theo mã cổ phiếu và ngày giao dịch
+data = data.sort_values(by=['stock_code', 'trade_date'])
+
+# Tính toán change (%) cho từng mã cổ phiếu
+data['change'] = data.groupby('stock_code')['closing_price'].pct_change() * 100
+
 
 def SMA(df, period, column):
     return df[column].rolling(window=period).mean()
@@ -223,21 +233,198 @@ def lstm_prediction_plotly(df, train_ratio=0.75, epochs=1):
     
     st.plotly_chart(fig)
 
+def lstm_future_prediction(df, train_ratio=0.75, epochs=1, future_months=1):
+    # Kiểm tra cột 'trade_date' có tồn tại không
+    if 'trade_date' not in df.columns:
+        st.write("Column 'trade_date' not found in the DataFrame.")
+        return
+
+    window_size = 40
+    if df.shape[0] < window_size:
+        st.write("Not enough data to train the model. Need at least window_size data points.")
+        return
+
+    # Đảm bảo cột 'trade_date' là datetime và đặt làm index
+    df['trade_date'] = pd.to_datetime(df['trade_date'])
+    df.set_index('trade_date', inplace=True)
+
+    # Chuẩn bị dữ liệu
+    df_new = df[['closing_price']]
+    dataset = df_new.values
+    train_size = ceil(df.shape[0] * train_ratio)
+    train = df_new[:train_size]
+    valid = df_new[train_size:]
+    
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    scaled_data = scaler.fit_transform(dataset)
+    
+    # Chuẩn bị dữ liệu train
+    x_train, y_train = [], []
+    for i in range(window_size, len(train)):
+        x_train.append(scaled_data[i-window_size:i, 0])
+        y_train.append(scaled_data[i, 0])
+    
+    x_train, y_train = np.array(x_train), np.array(y_train)
+    x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
+    
+    # Xây dựng mô hình LSTM
+    model = Sequential([
+        LSTM(units=50, return_sequences=True, input_shape=(x_train.shape[1], 1)),
+        LSTM(units=50),
+        Dense(1)
+    ])
+    model.compile(loss='mean_squared_error', optimizer='adam')
+
+    # Huấn luyện mô hình
+    model.fit(x_train, y_train, epochs=epochs, batch_size=1, verbose=2)
+    
+    # Chuẩn bị dữ liệu validate
+    inputs = df_new[len(df_new) - len(valid) - window_size:].values
+    inputs = scaler.transform(inputs.reshape(-1, 1))
+    
+    x_validate = []
+    for i in range(window_size, inputs.shape[0]):
+        x_validate.append(inputs[i-window_size:i, 0])
+    x_validate = np.array(x_validate)
+    x_validate = np.reshape(x_validate, (x_validate.shape[0], x_validate.shape[1], 1))
+    
+    # Dự đoán giá
+    predicted_price = model.predict(x_validate)
+    predicted_price = scaler.inverse_transform(predicted_price)
+    valid['Predictions'] = predicted_price
+
+    # Các dự đoán trong tương lai (tính theo tháng)
+    future_days = future_months * 30
+    last_window_data = scaled_data[-window_size:]
+
+    future_predictions = []
+
+    for _ in range(future_days):
+        next_prediction = model.predict(last_window_data.reshape(1, window_size, 1))
+        future_predictions.append(next_prediction[0, 0])
+        last_window_data = np.append(last_window_data[1:], next_prediction)
+
+    future_predictions = scaler.inverse_transform(np.array(future_predictions).reshape(-1, 1))
+    
+    # Ngày tương lai để biểu diễn
+    last_date = df_new.index[-1]
+    future_dates = [last_date + datetime.timedelta(days=i) for i in range(1, future_days + 1)]
+
+    # Biểu đồ dự đoán LSTM
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=train.index, y=train['closing_price'], mode='lines', name='Train'))
+    fig.add_trace(go.Scatter(x=valid.index, y=valid['closing_price'], mode='lines', name='Valid'))
+    fig.add_trace(go.Scatter(x=valid.index, y=valid['Predictions'], mode='lines', name='Prediction'))
+    fig.add_trace(go.Scatter(x=future_dates, y=future_predictions.flatten(), mode='lines', name='Future Predictions'))
+    fig.update_layout(title="Dự đoán giá cổ phiếu bằng LSTM", xaxis_title="Thời gian", yaxis_title="Giá",
+                      xaxis=dict(type='date', tickformat='%b %Y'), height=600, autosize=True)
+    
+    st.plotly_chart(fig)
+
+
 
 # Streamlit UI
 st.title('Stock Analysis Dashboard')
+
 
 # Sidebar
 st.sidebar.header('Cài Đặt')
 
 st.sidebar.subheader('Chọn Mã Cổ Phiếu')
 stock_code = st.sidebar.selectbox('Mã cổ phiếu', options=data['stock_code'].unique(), index=data['stock_code'].unique().tolist().index('VCB'))
+
+# Lọc dữ liệu theo mã cổ phiếu đã chọn
+stock_data = data[data['stock_code'] == stock_code]
+
+# in tail của stock_data
+# st.write(stock_data.tail())
+
+# Lấy ngày gần nhất và giá trị tương ứng
+latest_row = stock_data.iloc[-1]
+current_date = latest_row['trade_date']
+current_price = latest_row['closing_price']
+change_percentage = latest_row['change']
+
+# # Xác định màu sắc và biểu tượng dựa trên change
+# color = "green" if change_percentage > 0 else "red"
+# arrow = "▲" if change_percentage > 0 else "▼"
+
+# # Hiển thị thông tin
+# st.markdown(
+#     f"""
+#     <div style="text-align: center; font-size: 24px;">
+#         <b style="color: #444;">Mã cổ phiếu:</b> <span style="color: #0066cc;">{stock_code}</span><br>
+#         <b style="color: #444;">Ngày hiện tại:</b> <span style="color: #444;">{current_date}</span><br>
+#         <b style="color: {color};">Giá hiện tại:</b> {current_price:,.2f} VND<br>
+#         <b style="color: {color};">Change (%):</b> {arrow} {change_percentage:.2f}%
+#     </div>
+#     """,
+#     unsafe_allow_html=True,
+# )
+
+# Tạo các cột để hiển thị từng thông tin bên cạnh nhau
+col1, col2, col3, col4 = st.columns(4)
+
+# Màu sắc cho Change (%)
+background_color = "rgba(144,238,144,0.8)" if change_percentage > 0 else "rgba(255,182,193,0.8)"  # Xanh hoặc đỏ nhạt
+text_color = "green" if change_percentage > 0 else "red"
+arrow = "▲" if change_percentage > 0 else "▼"
+
+# Tên cổ phiếu
+with col1:
+    st.markdown(
+        f"""
+        <div style="background-color: #f0f8ff; padding: 10px; border-radius: 5px; text-align: center;">
+            <b style="color: #444;">Mã cổ phiếu</b><br>
+            <span style="color: #0066cc; font-size: 20px;">{stock_code}</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+# Ngày hiện tại
+with col2:
+    st.markdown(
+        f"""
+        <div style="background-color: #f8f8ff; padding: 10px; border-radius: 5px; text-align: center;">
+            <b style="color: #444;">Ngày hiện tại</b><br>
+            <span style="color: #444; font-size: 20px;">{current_date}</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+# Giá hiện tại
+with col3:
+    st.markdown(
+        f"""
+        <div style="background-color: {background_color}; padding: 10px; border-radius: 5px; text-align: center;">
+            <b style="color: #444;">Giá hiện tại</b><br>
+            <span style="color: {text_color}; font-size: 20px;">{current_price:,.2f} VND</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+# Change (%)
+with col4:
+    st.markdown(
+        f"""
+        <div style="background-color: {background_color}; padding: 10px; border-radius: 5px; text-align: center;">
+            <b style="color: #444;">Change (%)</b><br>
+            <span style="color: {text_color}; font-size: 20px;">{arrow} {change_percentage:.2f}%</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 st.sidebar.subheader('Moving Averages')
 
 # tao period
-period1 = st.sidebar.selectbox('Short-term MA', [15, 20, 30], index=1)
+period1 = st.sidebar.selectbox('Short-term MA', [15, 20, 30], index=0)
 period2 = st.sidebar.selectbox('Medium-term MA', [50, 80, 100], index=0)
-period3 = st.sidebar.selectbox('Long-term MA', [120, 150, 200], index=2)
+period3 = st.sidebar.selectbox('Long-term MA', [120, 150, 200], index=0)
 
 
 MA_type = st.sidebar.selectbox('MA Type', ['SMA', 'EMA', 'WMA', 'VWMA'])
@@ -247,3 +434,8 @@ buy_n_sell(data, stock_code=stock_code, col='closing_price', period1=period1, pe
 # Hiển thị dự đoán LSTM
 stock_data = data[data['stock_code'] == stock_code].sort_values(by='trade_date').reset_index(drop=True)
 lstm_prediction_plotly(stock_data, train_ratio=0.75, epochs=10)
+
+# Dự đoán giá trong tương lai
+stock_data = data[data['stock_code'] == stock_code]
+future_months = st.sidebar.selectbox('Future Prediction (months)', [1, 2, 3])
+lstm_future_prediction(stock_data, train_ratio=0.75, epochs=10, future_months=future_months)
