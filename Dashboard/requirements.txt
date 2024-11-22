@@ -1,7 +1,9 @@
 streamlit==1.29.0
+streamlit-elements
 scikit-learn
 plotly
 sqlalchemy
+os
 pandas
 psycopg2-binary
 matplotlib

@@ -10,6 +10,7 @@ from overview_utlils import get_filtered_data, display_index_overview, criteria_
 from detail import *
 import time 
 import datetime
+import os
 
 st.set_page_config(
     page_title="Stock Dashboard đó",
@@ -71,10 +72,11 @@ def load_all_tables():
 
     return data_frames
 
-def load_css(file_name):
-    with open(file_name, "r") as f:
-        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
+def load_css(file_name):
+    css_path = os.path.join(os.path.dirname(__file__), file_name)  # Dùng đường dẫn đầy đủ
+    with open(css_path, "r") as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 # Load external HTML file (optional)
 def load_html(file_name):
     with open(file_name, "r") as f:
