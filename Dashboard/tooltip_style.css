@@ -1,0 +1,47 @@
+.tooltip {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 500px; /* Chiều rộng sẽ tự động điều chỉnh */
+  max-width: 500px; /* Giới hạn chiều rộng tối đa */
+  background-color: black;
+  color: #fff;
+  text-align: left; /* Đổi từ center sang left để dễ đọc đoạn văn bản dài */
+  padding: 10px; /* Tăng padding để văn bản dễ đọc hơn */
+  border-radius: 6px; /* Thêm border-radius để tooltip mềm mại hơn */
+
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  top: 100%; /* Đặt tooltip dưới phần tử */
+  left: 50%;
+  transform: translateX(-50%); /* Cân chỉnh tooltip giữa phần tử */
+
+
+
+  /* Fade-in effect */
+  opacity: 0;
+  transition: opacity 0.3s;
+
+  /* Allow the text to wrap */
+  word-wrap: break-word; 
+  white-space: normal; /* Cho phép văn bản xuống dòng */
+  line-height: 1.5; /* Tăng khoảng cách dòng để dễ đọc */
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+
+.tooltip-right .tooltiptext {
+  top: 100%; /* Căn giữa theo chiều dọc */
+  left: 100%; /* Đặt tooltip ở bên phải phần tử */
+  transform: translateY(-50%) translateX(10px); /* Dịch chuyển tooltip sang phải và căn giữa */
+  text-align: left;
+}

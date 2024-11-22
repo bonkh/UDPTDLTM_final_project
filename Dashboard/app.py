@@ -1,38 +1,47 @@
 import streamlit as st
-import pandas as pd
-import plotly.express as px
 
-# Sample DataFrame
-stock_info = pd.DataFrame({
-    'industry_name': ['Industry1', 'Industry2', 'Industry1', 'Industry2'],
-    'code': ['CodeA', 'CodeB', 'CodeC', 'CodeD'],
-    'total_trading_value': [1000, 1500, 500, 800],
-    'price_change_percentage': [5.2, -3.1, 2.0, -1.5],
-    'exchange': ['HOSE', 'HNX', 'UPCOM', 'HOSE']
-})
+# CSS để tạo tooltip cho selectbox
+tooltip_css = """
+    <style>
+    /* CSS cho selectbox */
+    .streamlit-expanderHeader, .stSelectbox>label {
+        position: relative;
+    }
 
-# Create a treemap
-fig = px.treemap(
-    stock_info,
-    path=['industry_name', 'code'],
-    values='total_trading_value',
-    color='price_change_percentage',
-    color_continuous_scale='RdYlGn'
+    .stSelectbox>label::after {
+        content: " ";  /* Chứa nội dung tooltip */
+        position: absolute;
+        top: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #6c757d;
+        color: white;
+        border-radius: 5px;
+        padding: 8px;
+        width: 220px;
+        text-align: center;
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 12px;
+    }
+
+    .stSelectbox>label:hover::after {
+        visibility: visible;
+        opacity: 1;
+    }
+    </style>
+"""
+
+# Hiển thị CSS trên Streamlit
+st.markdown(tooltip_css, unsafe_allow_html=True)
+
+# Selectbox Streamlit
+exchange_filter = st.selectbox(
+    "Chọn sàn chứng khoán",  # Label của selectbox
+    options=["All", "HOSE", "HNX", "UPCoM"],
+    index=0
 )
 
-# Streamlit Plotly event capture for click interaction
-selected_code = st.session_state.get("selected_code", None)
-
-def update_code_on_click(trace, points, selector):
-    if points.point_inds:
-        selected_code = points.hovertext  # hovertext contains 'code' for this example
-        st.session_state.selected_code = selected_code
-
-# Display treemap
-st.plotly_chart(fig, use_container_width=True)
-
-# Display stock details if a code is selected
-if selected_code:
-    stock_details = stock_info[stock_info['code'] == selected_code]
-    st.write(f"Details for {selected_code}:")
-    st.table(stock_details)
+# Hiển thị kết quả
+st.write(f"Sàn chứng khoán được chọn: {exchange_filter}")

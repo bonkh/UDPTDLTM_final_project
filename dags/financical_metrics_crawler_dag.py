@@ -114,7 +114,7 @@ def fetch_and_insert_stock_data():
         query = text("SELECT code, url FROM stock_info")
         stock_list = connection.execute(query)
         
-        with ThreadPoolExecutor(max_workers=5) as executor:  # Adjust `max_workers` based on your needs
+        with ThreadPoolExecutor(max_workers=5) as executor:
             futures = {executor.submit(fetch_stock_data, row['code'], row['url']): row['code'] for row in stock_list}
             for future in as_completed(futures):
                 stock_code = futures[future]
@@ -126,7 +126,6 @@ def fetch_and_insert_stock_data():
 
         
     
-# Default arguments for the DAG
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
