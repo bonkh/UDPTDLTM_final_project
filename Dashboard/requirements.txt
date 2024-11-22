@@ -3,7 +3,6 @@ streamlit-elements
 scikit-learn
 plotly
 sqlalchemy
-os
 pandas
 psycopg2-binary
 matplotlib
