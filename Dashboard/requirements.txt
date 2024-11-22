@@ -6,6 +6,7 @@ pandas
 psycopg2-binary
 matplotlib
 seaborn
-numpy as np
+numpy
 ipywidgets
 IPython
+streamlit_plotly_events
