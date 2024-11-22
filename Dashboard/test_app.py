@@ -1,5 +1,4 @@
 import streamlit as st
-from streamlit_elements import elements, mui
 from streamlit_plotly_events import plotly_events
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import plotly.graph_objects as go
