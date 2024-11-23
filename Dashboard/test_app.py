@@ -160,7 +160,7 @@ with chart_col:
         )
 
         exchange_filter = st.selectbox(
-            "",
+            "exchange",
             options=["All", "HOSE", "HNX", "UPCoM"],
             index=0,
             label_visibility="collapsed"
@@ -188,7 +188,7 @@ with chart_col:
         )
 
         industry_filter = st.selectbox(
-            "",
+            "industry",
             options=['All'] + list(stock_info['industry_name'].unique()),
             index = 0 ,
             label_visibility="collapsed"
@@ -433,7 +433,7 @@ st.markdown(
             unsafe_allow_html=True,
         )
 exchange = st.selectbox(
-            "",
+            "exchange",
             options=["All", "HOSE", "HNX", "UPCoM"],
             index=0,
             label_visibility="collapsed",
