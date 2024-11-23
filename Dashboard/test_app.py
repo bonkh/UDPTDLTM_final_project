@@ -309,69 +309,69 @@ with chart_col:
 
                 # Lấy 
                 labels = market_overview_fig.data[0]['labels']
-                if labels: 
-                    hovered_label = labels[point_number]
+               
+                hovered_label = labels[point_number]
 
-                    with info_col:
-                        with st.container():
-                
-                            if hovered_label in stock_data['stock_code'].unique():
-                                selected_row = stock_data[stock_data['stock_code'] == hovered_label].iloc[0]
+                with info_col:
+                    with st.container():
+            
+                        if hovered_label in stock_data['stock_code'].unique():
+                            selected_row = stock_data[stock_data['stock_code'] == hovered_label].iloc[0]
 
-                                color = "green" if selected_row["price_change"] > 0 else "red"
-                                closing_price = f"{selected_row['closing_price']:.2f}"
-                                price_change = f"{selected_row['price_change']:.2f}"
-                                price_change_percentage = f"({selected_row['price_change_percentage']:.2f}%)"
+                            color = "green" if selected_row["price_change"] > 0 else "red"
+                            closing_price = f"{selected_row['closing_price']:.2f}"
+                            price_change = f"{selected_row['price_change']:.2f}"
+                            price_change_percentage = f"({selected_row['price_change_percentage']:.2f}%)"
 
+                            
+                            # display_stock_overview(selected_row, hovered_label, latest_date)
+
+                            st.subheader(f"Mã cổ phiếu: {selected_row['stock_code']}")
+
+                            name = stock_info[stock_info['code'] == hovered_label]['name'].iloc[0]
+                            st.markdown(name)
+
+                            industry = stock_info[stock_info['code'] == hovered_label]['industry_name'].iloc[0]
+                            st.markdown(industry)
+
+                            columns_to_select = [
+                                "market_capitalization", "reference_price", "ceiling_price", "floor_price",
+                                "opening_price", "closing_price", "highest_price", "lowest_price",
+                                "total_trading_volume", "total_trading_value"
+                            ]
+
+                            # Lọc hàng tương ứng với `hovered_label` và chỉ lấy các cột cần thiết
+                            selected_row = stock_data.loc[stock_data['stock_code'] == hovered_label, columns_to_select].iloc[0]
+
+                            for column, value in selected_row.items():
+                    
+                                if isinstance(value, float):
+                                    value = f"{value:.2f}"
+
+                                tooltip_text = (
+                                    f"Đây là cột {criteria_mapping[column]}, {column_explanations[column]}"
+                                    f"Giá trị hiện tại trong ngày {latest_date} là {value}."
+                                )
                                 
-                                # display_stock_overview(selected_row, hovered_label, latest_date)
-
-                                st.subheader(f"Mã cổ phiếu: {selected_row['stock_code']}")
-
-                                name = stock_info[stock_info['code'] == hovered_label]['name'].iloc[0]
-                                st.markdown(name)
-
-                                industry = stock_info[stock_info['code'] == hovered_label]['industry_name'].iloc[0]
-                                st.markdown(industry)
-
-                                columns_to_select = [
-                                    "market_capitalization", "reference_price", "ceiling_price", "floor_price",
-                                    "opening_price", "closing_price", "highest_price", "lowest_price",
-                                    "total_trading_volume", "total_trading_value"
-                                ]
-
-                                # Lọc hàng tương ứng với `hovered_label` và chỉ lấy các cột cần thiết
-                                selected_row = stock_data.loc[stock_data['stock_code'] == hovered_label, columns_to_select].iloc[0]
-
-                                for column, value in selected_row.items():
-                        
-                                    if isinstance(value, float):
-                                        value = f"{value:.2f}"
-
-                                    tooltip_text = (
-                                        f"Đây là cột {criteria_mapping[column]}, {column_explanations[column]}"
-                                        f"Giá trị hiện tại trong ngày {latest_date} là {value}."
-                                    )
-                                    
-                                    
-                                    st.markdown(
-                                        f"""
-                                        <div class="tooltip tooltip-right "  style="display: flex; align-items: center; justify-content: space-between; white-space: nowrap;">
-                                            <div style="font-size: 15px; font-weight: bold; text-align: left; margin-right: 10px;">
-                                                {criteria_mapping[column]}:
-                                            </div>
-                                            <div style="font-size: 15px; text-align: right;">
-                                                {value}
-                                            </div>
-                                            <span class="tooltiptext">
-                                            {tooltip_text}
-                                            </span>
+                                
+                                st.markdown(
+                                    f"""
+                                    <div class="tooltip tooltip-right "  style="display: flex; align-items: center; justify-content: space-between; white-space: nowrap;">
+                                        <div style="font-size: 15px; font-weight: bold; text-align: left; margin-right: 10px;">
+                                            {criteria_mapping[column]}:
                                         </div>
-                                        """,
-                                        unsafe_allow_html=True,
-                                        )
-                            else:
-                                st.write(f"Industry: {hovered_label}")
+                                        <div style="font-size: 15px; text-align: right;">
+                                            {value}
+                                        </div>
+                                        <span class="tooltiptext">
+                                        {tooltip_text}
+                                        </span>
+                                    </div>
+                                    """,
+                                    unsafe_allow_html=True,
+                                    )
+                        else:
+                            st.write(f"Industry: {hovered_label}")
             else:
             
                 if time.time() - st.session_state.last_hover_time > 1: 
