@@ -308,7 +308,7 @@ with chart_col:
                 st.session_state.last_hovered_point = point_number  
 
                 # Lấy 
-                labels = market_overview_fig.data[0].get('labels', None)
+                labels = market_overview_fig.data[0]['labels']
                 if labels: 
                     hovered_label = labels[point_number]
 
