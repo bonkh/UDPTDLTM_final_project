@@ -1,10 +1,15 @@
 import pandas as pd
 from sqlalchemy import create_engine, text
 import logging
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+# PostgreSQL connection string
+conn_str = os.getenv('DATABASE_RENDER')
+engine = create_engine(conn_str)
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-engine = create_engine('postgresql://stock_data_i36c_user:YLMLHhfjF7oIdi3SMzexVaobFuaL37Dc@dpg-csro9ppu0jms73e1epb0-a.singapore-postgres.render.com/stock_data_i36c')
 
 df = pd.read_csv('corporate_data.csv')
 df_filtered = df[['CatID', 'Exchange', 'IndustryName', 'Code', 'Name', 'URL']]
@@ -34,6 +39,7 @@ logging.info("Table `stock_info` ensured to exist.")
 
 
 existing_codes_query = "SELECT code FROM stock_info"
+
 with engine.connect() as connection:
     existing_codes = set(pd.read_sql(existing_codes_query, connection)['code'])
 logging.info(f"Fetched {len(existing_codes)} existing codes from the database.")
