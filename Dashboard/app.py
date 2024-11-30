@@ -1,3 +1,9 @@
+import os
+import json
+from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI
+
+
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -15,7 +21,19 @@ from math import ceil, sqrt
 import datetime
 import warnings
 
+
 warnings.filterwarnings("ignore")
+
+load_dotenv()
+API_KEY = os.getenv("OPENAI_API_KEY")
+llm = ChatOpenAI(
+    model="gpt-4o-mini", openai_api_key=os.getenv("OPENAI_API_KEY")
+)
+
+def remove_json_formatting(input_text):
+    # Loại bỏ dấu ```json và ``` nếu chúng có trong input_text
+    cleaned_text = input_text.strip("```json").strip("```").strip()
+    return cleaned_text
 
 @st.cache_data 
 def load_stock_data():
@@ -23,12 +41,16 @@ def load_stock_data():
 
     return pd.read_sql("SELECT * FROM stock_data", engine)
 
-# def load_stock_info():
-#     engine = create_engine('postgresql+psycopg2://caokhoi:m6ikFt3TKwnkV75fNZ2FBdKiEHKEu1sN@dpg-cs87v7m8ii6s73c5m19g-a.singapore-postgres.render.com:5432/stock_data_01')
+def load_stock_info():
+    engine = create_engine('postgresql://stock_data_i36c_user:YLMLHhfjF7oIdi3SMzexVaobFuaL37Dc@dpg-csro9ppu0jms73e1epb0-a.singapore-postgres.render.com/stock_data_i36c')
 
-#     return pd.read_sql("SELECT * FROM stock_info", engine)
+    return pd.read_sql("SELECT * FROM stock_info", engine)
 
 data = load_stock_data()
+
+info = load_stock_info()
+
+# st.write(info.head())
 # stock_info = load_stock_info()
 
 # save csv file to read
@@ -324,11 +346,11 @@ def lstm_future_prediction(df, train_ratio=0.75, epochs=1, future_months=1):
 
 
 # Streamlit UI
-st.title('Stock Analysis Dashboard')
+st.title('Dashboard phân tích cổ phiếu')
 
 
 # Sidebar
-st.sidebar.header('Cài Đặt')
+# st.sidebar.header('Cài Đặt')
 
 st.sidebar.subheader('Chọn Mã Cổ Phiếu')
 stock_code = st.sidebar.selectbox('Mã cổ phiếu', options=data['stock_code'].unique(), index=data['stock_code'].unique().tolist().index('VCB'))
@@ -345,22 +367,15 @@ current_date = latest_row['trade_date']
 current_price = latest_row['closing_price']
 change_percentage = latest_row['change']
 
-# # Xác định màu sắc và biểu tượng dựa trên change
-# color = "green" if change_percentage > 0 else "red"
-# arrow = "▲" if change_percentage > 0 else "▼"
+# Merge dữ liệu từ data và info
+merged_data = pd.merge(data, info, left_on='stock_code', right_on='code', how='left')
 
-# # Hiển thị thông tin
-# st.markdown(
-#     f"""
-#     <div style="text-align: center; font-size: 24px;">
-#         <b style="color: #444;">Mã cổ phiếu:</b> <span style="color: #0066cc;">{stock_code}</span><br>
-#         <b style="color: #444;">Ngày hiện tại:</b> <span style="color: #444;">{current_date}</span><br>
-#         <b style="color: {color};">Giá hiện tại:</b> {current_price:,.2f} VND<br>
-#         <b style="color: {color};">Change (%):</b> {arrow} {change_percentage:.2f}%
-#     </div>
-#     """,
-#     unsafe_allow_html=True,
-# )
+# Lọc dữ liệu theo mã cổ phiếu được chọn
+stock_data = merged_data[merged_data['stock_code'] == stock_code]
+
+# Lấy thông tin công ty
+company_name = stock_data['name'].iloc[0]  # Tên công ty
+industry_name = stock_data['industry_name'].iloc[0]  # Ngành nghề
 
 # Tạo các cột để hiển thị từng thông tin bên cạnh nhau
 col1, col2, col3, col4 = st.columns(4)
@@ -418,6 +433,63 @@ with col4:
         unsafe_allow_html=True,
     )
 
+# Hiển thị thông tin công ty
+st.markdown(
+    f"""
+    <div style="
+        background-color: #f9f9f9; 
+        border-radius: 8px; 
+        padding: 16px; 
+        margin-bottom: 16px; 
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    ">
+        <h4 style="color: #4CAF50; margin-bottom: 8px;">Thông tin tổ chức</h4>
+        <p><strong>Tên đầy đủ:</strong> {company_name}</p>
+        <p><strong>Ngành nghề:</strong> {industry_name}</p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+# Ngày mới nhất trong dữ liệu
+today = stock_data['trade_date'].max()
+
+# Chuyển đổi cột 'trade_date' thành pd.Timestamp nếu cần
+stock_data['trade_date'] = pd.to_datetime(stock_data['trade_date'])
+
+# Giao diện chọn khoảng thời gian
+# st.subheader("Chọn khoảng thời gian cho biểu đồ nến")
+time_range = st.radio(
+    "Khoảng thời gian",
+    options=['1W', '2W', '1M', '3M', '6M', '1Y', 'YTD', 'Toàn bộ dữ liệu'],
+    index=7,  # Đặt mặc định là "Toàn bộ dữ liệu"
+    horizontal=True  # Hiển thị các nút theo chiều ngang
+)
+
+# Lựa chọn ngày bắt đầu
+if time_range == '1W':
+    start_date = today - pd.Timedelta(weeks=1)
+elif time_range == '2W':
+    start_date = today - pd.Timedelta(weeks=2)
+elif time_range == '1M':
+    start_date = today - pd.DateOffset(months=1)
+elif time_range == '3M':
+    start_date = today - pd.DateOffset(months=3)
+elif time_range == '6M':
+    start_date = today - pd.DateOffset(months=6)
+elif time_range == '1Y':
+    start_date = today - pd.DateOffset(years=1)
+elif time_range == 'YTD':
+    start_date = pd.Timestamp(year=today.year, month=1, day=1)
+else:
+    start_date = stock_data['trade_date'].min()
+
+# Đảm bảo `start_date` là kiểu pd.Timestamp
+start_date = pd.Timestamp(start_date)
+
+
+# Lọc dữ liệu theo khoảng thời gian
+filtered_data = stock_data[stock_data['trade_date'] >= start_date]
 
 st.sidebar.subheader('Moving Averages')
 
@@ -429,7 +501,7 @@ period3 = st.sidebar.selectbox('Long-term MA', [120, 150, 200], index=0)
 
 MA_type = st.sidebar.selectbox('MA Type', ['SMA', 'EMA', 'WMA', 'VWMA'])
 
-buy_n_sell(data, stock_code=stock_code, col='closing_price', period1=period1, period2=period2, period3=period3, MA_type=MA_type)
+buy_n_sell(filtered_data, stock_code=stock_code, col='closing_price', period1=period1, period2=period2, period3=period3, MA_type=MA_type)
 
 # Hiển thị dự đoán LSTM
 stock_data = data[data['stock_code'] == stock_code].sort_values(by='trade_date').reset_index(drop=True)
@@ -439,3 +511,99 @@ lstm_prediction_plotly(stock_data, train_ratio=0.75, epochs=10)
 stock_data = data[data['stock_code'] == stock_code]
 future_months = st.sidebar.selectbox('Future Prediction (months)', [1, 2, 3])
 lstm_future_prediction(stock_data, train_ratio=0.75, epochs=10, future_months=future_months)
+
+def remove_json_formatting(input_text):
+    # Loại bỏ dấu ```json và ``` nếu chúng có trong input_text
+    cleaned_text = input_text.strip("```json").strip("```").strip()
+    return cleaned_text
+
+
+# Chuẩn bị dữ liệu để call OPENAI API để phân tích tình hình cổ phiếu (dựa theo stock_code)
+# Chuẩn bị dữ liệu từ DataFrame
+data = {
+    "stock_code": stock_data["stock_code"].values.tolist(),
+    "opening_price": stock_data["opening_price"].values.tolist(),
+    "closing_price": stock_data["closing_price"].values.tolist(),
+    "highest_price": stock_data["highest_price"].values.tolist(),
+    "lowest_price": stock_data["lowest_price"].values.tolist(),
+    "reference_price": stock_data["reference_price"].values.tolist(),
+    "price_change": stock_data["price_change"].values.tolist(),
+    "price_change_percentage": stock_data[
+        "price_change_percentage"
+    ].values.tolist(),
+    "difference": stock_data["difference"].values.tolist(),
+    "average_price": stock_data["average_price"].values.tolist(),
+    "adjusted_closing_price": stock_data[
+        "adjusted_closing_price"
+    ].values.tolist(),
+    "total_trading_volume": stock_data["total_trading_volume"].values.tolist(),
+    "total_trading_value": stock_data["total_trading_value"].values.tolist(),
+    "buy_limit": stock_data["buy_limit"].values.tolist(),
+    "sell_limit": stock_data["sell_limit"].values.tolist(),
+}
+
+# Định nghĩa chuỗi system với các dấu {} được thoát
+system = """You are an expert at Stock analysis.  
+Here is the context you should refer to:  
+Your task is to analyze the stock performance over the past month based on the provided metrics. Use the following data points extracted from the stock dataset:
+- stock_code: {stock_code} (Mã cổ phiếu).  
+- opening_price: {opening_price} (Giá mở cửa mỗi ngày).  
+- closing_price: {closing_price} (Giá đóng cửa mỗi ngày).  
+- highest_price: {highest_price} (Giá cao nhất trong ngày).  
+- lowest_price: {lowest_price} (Giá thấp nhất trong ngày).  
+- reference_price: {reference_price} (Giá tham chiếu để đánh giá mức tăng hoặc giảm).  
+- price_change: {price_change} (Sự thay đổi giá trong ngày).  
+- price_change_percentage: {price_change_percentage} (Phần trăm thay đổi giá mỗi ngày).  
+- difference: {difference} (Mức dao động giá trong ngày).  
+- average_price: {average_price} (Giá trung bình giao dịch mỗi ngày).  
+- adjusted_closing_price: {adjusted_closing_price} (Giá đóng cửa điều chỉnh, nếu có).  
+- total_trading_volume: {total_trading_volume} (Tổng khối lượng giao dịch trong ngày).  
+- total_trading_value: {total_trading_value} (Tổng giá trị giao dịch trong ngày).  
+- buy_limit: {buy_limit} (Giới hạn mua, thể hiện áp lực mua).  
+- sell_limit: {sell_limit} (Giới hạn bán, thể hiện áp lực bán).
+
+Your response must be in Vietnamese and in JSON format with the following structure:  
+```json
+{{
+  "question": "What is the stock performance over the past month?",
+  "answer": "Your detailed analysis based on the context and data"
+}}
+"""
+
+
+# Định dạng chuỗi với dữ liệu thực tế
+formatted_system = system.format(**data)
+
+
+def handle_analyst(formatted_system):
+    messages = [
+        {
+            "role": "system",
+            "content": formatted_system,
+        },  # Nội dung từ formatted_system
+        {
+            "role": "user",
+            "content": "What is the stock performance over the past month?",
+        },  # Câu hỏi từ người dùng
+    ]
+    response = llm(messages)
+    # load_json
+    response_json = remove_json_formatting(response.content)
+    response_json = json.loads(response_json)
+    return response_json["answer"]
+
+
+if "analysis_result" not in st.session_state:
+    st.session_state.analysis_result = None
+
+# Tạo nút "Phân tích cổ phiếu"
+
+with st.spinner("Đang phân tích..."):
+    response = handle_analyst(formatted_system)
+    st.session_state.analysis_result = response  # Lưu kết quả vào session_state
+
+# Hiển thị kết quả nếu có
+if st.session_state.analysis_result:
+    with st.container():
+        st.write("*Kết quả phân tích:*")
+        st.write(response)
