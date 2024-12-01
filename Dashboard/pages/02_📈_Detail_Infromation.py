@@ -27,6 +27,15 @@ llm = ChatOpenAI(
     model="gpt-4o-mini", openai_api_key=os.getenv("OPENAI_API_KEY")
 )
 
+def setup_page():
+    st.set_page_config(
+        page_title="Detail Stock Information ",
+        page_icon="📈",
+        layout="wide",
+    )
+
+setup_page()
+
 def remove_json_formatting(input_text):
     # Loại bỏ dấu ```json và ``` nếu chúng có trong input_text
     cleaned_text = input_text.strip("```json").strip("```").strip()

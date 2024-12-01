@@ -8,7 +8,7 @@ import importlib
 import os
 from data_loader import load_all_tables
 
-from overview_utlils import load_css
+from PTDLTM.Project.Chatbot.UDPTDLTM_final_project.Dashboard.overview_utils import load_css
 
 PAGES = {
     "Overview": {

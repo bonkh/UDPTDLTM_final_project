@@ -4,6 +4,12 @@ import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from sqlalchemy import create_engine
 import streamlit as st
+from dotenv import load_dotenv
+load_dotenv()
+
+conn_str = os.getenv('DATABASE_RENDER')
+engine = create_engine(conn_str)
+
 
 @st.cache_data
 def load_all_tables():
@@ -20,20 +26,15 @@ def load_all_tables():
                 st.error(f"Error loading {table}: {e}")
                 data_frames[table] = pd.DataFrame()
 
+    print("Data loaded successfully !!!")
     return data_frames
 
 
 @st.cache_data
 def load_data(table_name):
-    engine = create_engine(
-        "postgresql://stock_data_i36c_user:YLMLHhfjF7oIdi3SMzexVaobFuaL37Dc@dpg-csro9ppu0jms73e1epb0-a.singapore-postgres.render.com/stock_data_i36c"
-    )
     return pd.read_sql(f"SELECT * FROM {table_name}", engine)
 
 
 @st.cache_data
 def load_stock_data():
-    engine = create_engine(
-        "postgresql://stock_data_i36c_user:YLMLHhfjF7oIdi3SMzexVaobFuaL37Dc@dpg-csro9ppu0jms73e1epb0-a.singapore-postgres.render.com/stock_data_i36c"
-    )
     return pd.read_sql("SELECT * FROM stock_data", engine)

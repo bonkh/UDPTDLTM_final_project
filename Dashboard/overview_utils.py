@@ -198,7 +198,7 @@ column_explanations = {
 
 def load_css(file_name):
     css_path = os.path.join(os.path.dirname(__file__), file_name)
-    with open(css_path, "r") as f:
+    with open(css_path, "r", encoding= 'utf-8') as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # Load external HTML file (optional)
