@@ -1,5 +1,5 @@
 # market_overview.py
-
+import os
 import pandas as pd
 import streamlit as st
 
@@ -194,3 +194,14 @@ column_explanations = {
     "total_trading_volume": "Khối lượng giao dịch tổng cộng của cổ phiếu trong phiên giao dịch, thể hiện số lượng cổ phiếu đã được mua/bán.",
     "total_trading_value": "Giá trị giao dịch tổng cộng của cổ phiếu trong phiên giao dịch, tính bằng giá trị của số cổ phiếu đã giao dịch (khối lượng giao dịch * giá)."
 }
+
+
+def load_css(file_name):
+    css_path = os.path.join(os.path.dirname(__file__), file_name)
+    with open(css_path, "r") as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+# Load external HTML file (optional)
+def load_html(file_name):
+    with open(file_name, "r") as f:
+        st.markdown(f.read(), unsafe_allow_html=True)

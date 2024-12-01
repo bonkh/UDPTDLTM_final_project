@@ -168,7 +168,7 @@ def update_database(ticker_list, from_date, to_date):
                 gc.collect()
 
 if __name__ == "__main__":
-    from_date = (datetime.today() - timedelta(days=365)).strftime('%Y-%m-%d')
+    from_date = (datetime.today() - timedelta(days=7)).strftime('%Y-%m-%d')
     to_date = datetime.today().strftime('%Y-%m-%d')
 
     update_database(ticker_list, from_date, to_date)

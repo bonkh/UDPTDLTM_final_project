@@ -1,38 +1,36 @@
+
+.stSidebar > div:first-child {
+  overflow: visible !important;
+  z-index: 1; /* Đảm bảo tooltip được hiển thị trên các thành phần khác */
+}
+
 .tooltip {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
 }
 
 .tooltip .tooltiptext {
   visibility: hidden;
-  width: 500px; /* Chiều rộng sẽ tự động điều chỉnh */
-  max-width: 500px; /* Giới hạn chiều rộng tối đa */
+  width: 500px; 
+  max-width: 500px; 
   background-color: black;
   color: #fff;
-  text-align: left; /* Đổi từ center sang left để dễ đọc đoạn văn bản dài */
-  padding: 10px; /* Tăng padding để văn bản dễ đọc hơn */
-  border-radius: 6px; /* Thêm border-radius để tooltip mềm mại hơn */
+  text-align: left;
+  padding: 10px; 
+  border-radius: 6px; 
 
-  /* Position the tooltip */
   position: absolute;
-  z-index: 1;
-  top: 100%; /* Đặt tooltip dưới phần tử */
+  z-index: 9999;
+  top: 100%; 
   left: 50%;
-  transform: translateX(-50%); /* Cân chỉnh tooltip giữa phần tử */
-
-
-
-  /* Fade-in effect */
+  transform: translateX(-50%); 
   opacity: 0;
   transition: opacity 0.3s;
-
-  /* Allow the text to wrap */
   word-wrap: break-word; 
-  white-space: normal; /* Cho phép văn bản xuống dòng */
-  line-height: 1.5; /* Tăng khoảng cách dòng để dễ đọc */
+  white-space: normal; 
+  line-height: 1.5; 
 }
-
 .tooltip:hover .tooltiptext {
   visibility: visible;
   opacity: 1;
@@ -40,8 +38,33 @@
 
 
 .tooltip-right .tooltiptext {
-  top: 100%; /* Căn giữa theo chiều dọc */
-  left: 100%; /* Đặt tooltip ở bên phải phần tử */
-  transform: translateY(-50%) translateX(10px); /* Dịch chuyển tooltip sang phải và căn giữa */
+  top: 100%; 
+  left: 100%; 
+  transform: translateY(-50%) translateX(10px); 
   text-align: left;
+  z-index: 9999;
 }
+
+.tooltip-fullwidth {
+  display: block; /* Đảm bảo link hoặc container chiếm toàn bộ chiều rộng */
+  width: 100%;
+}
+
+.sidebar-link {
+  display: block;
+  width: 100%;
+  padding: 20px;
+  background-color: #4CAF50;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.scrollable-container {
+    height: 500px;  /* Adjust height as needed */
+    overflow-y: auto;
+    padding-right: 10px;
+} 
+
+
