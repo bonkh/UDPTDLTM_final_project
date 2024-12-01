@@ -76,22 +76,61 @@ def download_data_to_dataframe(code, from_date, to_date, page_index=1, page_size
         print(f"Unexpected error when parsing data for {code}: {e}")
         return None
 
+# def insert_data_to_db(df, table_name):
+#     with engine.connect() as connection:
+#         for index, row in df.iterrows():
+#             try:
+#                 query = text("""
+#                     SELECT COUNT(*) FROM stock_data 
+#                     WHERE trade_date = :trade_date AND stock_code = :stock_code
+#                 """)
+#                 result = connection.execute(query, {'trade_date': row['trade_date'], 'stock_code': row['stock_code']})
+#                 count = result.scalar()
+#                 if count == 0:
+#                     row.to_frame().T.to_sql(table_name, con=connection, if_exists='append', index=False)
+#                 else:
+#                     print(f"Duplicate entry for {row['trade_date']} and {row['stock_code']}, skipping.")
+#             except Exception as e:
+#                 print(f"Error inserting data for {row['trade_date']} and {row['stock_code']}: {e}")
+
 def insert_data_to_db(df, table_name):
     with engine.connect() as connection:
         for index, row in df.iterrows():
             try:
-                query = text("""
-                    SELECT COUNT(*) FROM stock_data 
+                # Check if the row exists
+                check_query = text("""
+                    SELECT * FROM stock_data 
                     WHERE trade_date = :trade_date AND stock_code = :stock_code
                 """)
-                result = connection.execute(query, {'trade_date': row['trade_date'], 'stock_code': row['stock_code']})
-                count = result.scalar()
-                if count == 0:
-                    row.to_frame().T.to_sql(table_name, con=connection, if_exists='append', index=False)
+                result = connection.execute(check_query, {'trade_date': row['trade_date'], 'stock_code': row['stock_code']})
+                existing_row = result.fetchone()
+                
+                if existing_row:
+                    # Convert the result to a dictionary
+                    existing_data = dict(existing_row)
+
+                    # Check for differences between existing data and new row
+                    row_dict = row.to_dict()
+                    differences = {key: row_dict[key] for key in row_dict if key in existing_data and row_dict[key] != existing_data[key]}
+
+                    if differences:
+                        # Update the row if there are changes
+                        update_query = text(f"""
+                            UPDATE {table_name} 
+                            SET {', '.join(f'{key} = :{key}' for key in row_dict.keys())}
+                            WHERE trade_date = :trade_date AND stock_code = :stock_code
+                        """)
+                        connection.execute(update_query, row_dict)
+                        print(f"Updated data for {row['trade_date']} and {row['stock_code']}.")
+                    else:
+                        print(f"No changes for {row['trade_date']} and {row['stock_code']}. Skipping update.")
                 else:
-                    print(f"Duplicate entry for {row['trade_date']} and {row['stock_code']}, skipping.")
+                    # Insert the row if it doesn't exist
+                    row.to_frame().T.to_sql(table_name, con=connection, if_exists='append', index=False)
+                    print(f"Inserted new data for {row['trade_date']} and {row['stock_code']}.")
             except Exception as e:
-                print(f"Error inserting data for {row['trade_date']} and {row['stock_code']}: {e}")
+                print(f"Error processing data for {row['trade_date']} and {row['stock_code']}: {e}")
+
 
 def process_stock_data(ticker, from_date, to_date):
     print(f"Processing stock code {ticker}...")

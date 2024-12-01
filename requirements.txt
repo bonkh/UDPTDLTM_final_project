@@ -1,3 +1,5 @@
+python-dotenv
+pandas
 cloudscraper
 beautifulsoup4
 psycopg2-binary

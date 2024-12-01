@@ -1,2 +1,4 @@
 /logs/
 /plugins/
+__pycache__/
+.env.local

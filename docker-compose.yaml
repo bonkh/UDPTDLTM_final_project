@@ -116,14 +116,13 @@ services:
     restart: always
 
   airflow-webserver:
-    # image: airflow_image:latest
     build:
       context: .  
       dockerfile: Dockerfile 
+    env_file:
+      - .env
     <<: *airflow-common
     command: webserver
-    environment:
-      <<: *airflow-common-env
     ports:
       - "8080:8080"
     healthcheck:
@@ -139,10 +138,11 @@ services:
         condition: service_completed_successfully
 
   airflow-scheduler:
-    # image: airflow_image:latest
     build:
-      context: .  # Directory containing your Dockerfile and requirements.txt
-      dockerfile: Dockerfile 
+      context: .  
+      dockerfile: Dockerfile
+    env_file:
+      - .env
     <<: *airflow-common
     command: scheduler
     healthcheck:
@@ -158,10 +158,11 @@ services:
         condition: service_completed_successfully
 
   airflow-worker:
-    # image: airflow_image:latest
     build:
-      context: .  # Directory containing your Dockerfile and requirements.txt
+      context: .  
       dockerfile: Dockerfile 
+    env_file:
+      - .env
     <<: *airflow-common
     command: celery worker
     healthcheck:

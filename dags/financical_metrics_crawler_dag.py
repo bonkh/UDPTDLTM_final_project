@@ -7,9 +7,17 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# PostgreSQL connection string
+conn_str = os.getenv('DATABASE_RENDER')
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-conn_str = 'postgresql://stock_data_i36c_user:YLMLHhfjF7oIdi3SMzexVaobFuaL37Dc@dpg-csro9ppu0jms73e1epb0-a.singapore-postgres.render.com/stock_data_i36c'
+# conn_str = 'postgresql://stock_data_i36c_user:YLMLHhfjF7oIdi3SMzexVaobFuaL37Dc@dpg-csro9ppu0jms73e1epb0-a.singapore-postgres.render.com/stock_data_i36c'
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
@@ -114,7 +122,7 @@ def fetch_and_insert_stock_data():
         query = text("SELECT code, url FROM stock_info")
         stock_list = connection.execute(query)
         
-        with ThreadPoolExecutor(max_workers=5) as executor:  # Adjust `max_workers` based on your needs
+        with ThreadPoolExecutor(max_workers=5) as executor:
             futures = {executor.submit(fetch_stock_data, row['code'], row['url']): row['code'] for row in stock_list}
             for future in as_completed(futures):
                 stock_code = futures[future]
@@ -126,7 +134,6 @@ def fetch_and_insert_stock_data():
 
         
     
-# Default arguments for the DAG
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,

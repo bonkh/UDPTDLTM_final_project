@@ -1,38 +1,39 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
-# Sample DataFrame
-stock_info = pd.DataFrame({
-    'industry_name': ['Industry1', 'Industry2', 'Industry1', 'Industry2'],
-    'code': ['CodeA', 'CodeB', 'CodeC', 'CodeD'],
-    'total_trading_value': [1000, 1500, 500, 800],
-    'price_change_percentage': [5.2, -3.1, 2.0, -1.5],
-    'exchange': ['HOSE', 'HNX', 'UPCOM', 'HOSE']
-})
+data = {
+    "Giá": [1250.46, 224.64, 92.74, 1311.26],
+    "%D": ["+0.67%", "+0.48%", "+0.43%", "+0.75%"],
+    "%W": ["+1.82%", "+1.51%", "+1.13%", "+1.96%"],
+    "%M": ["-0.34%", "+0.02%", "+0.64%", "-1.29%"],
+    "%Q": ["-2.42%", "-5.70%", "-1.48%", "-0.93%"],
+    "%YTD": ["+10.49%", "-2.33%", "+5.89%", "+15.87%"],
+    "%Y": ["+14.15%", "+0.11%", "+9.54%", "+20.46%"],
+    "stock_code": ["VN-Index", "HNX", "UPCOM", "VN30"],  # Add stock_code as identifier
+}
 
-# Create a treemap
-fig = px.treemap(
-    stock_info,
-    path=['industry_name', 'code'],
-    values='total_trading_value',
-    color='price_change_percentage',
-    color_continuous_scale='RdYlGn'
+# Create a DataFrame
+df = pd.DataFrame(data)
+
+st.subheader("Chỉ số thị trường")
+
+# Configure the AgGrid table
+gb = GridOptionsBuilder.from_dataframe(df)
+gb.configure_selection("single", use_checkbox=False)  # Enable single-row selection
+grid_options = gb.build()
+
+grid_response = AgGrid(
+    df,
+    gridOptions=grid_options,
+    height=300,
+    update_mode=GridUpdateMode.SELECTION_CHANGED,
+    theme="streamlit",  # Choose from: "streamlit", "light", "dark", "blue", "fresh", "material"
 )
 
-# Streamlit Plotly event capture for click interaction
-selected_code = st.session_state.get("selected_code", None)
-
-def update_code_on_click(trace, points, selector):
-    if points.point_inds:
-        selected_code = points.hovertext  # hovertext contains 'code' for this example
-        st.session_state.selected_code = selected_code
-
-# Display treemap
-st.plotly_chart(fig, use_container_width=True)
-
-# Display stock details if a code is selected
-if selected_code:
-    stock_details = stock_info[stock_info['code'] == selected_code]
-    st.write(f"Details for {selected_code}:")
-    st.table(stock_details)
+if grid_response.get("selected_rows") is not None and not grid_response["selected_rows"].empty:
+    selected_row = grid_response["selected_rows"]
+    stock_code = selected_row["stock_code"].iloc[0]  # Access the first row's stock_code
+    st.success(f"You selected: {stock_code}")
+else:
+    st.info("No row selected. Please select a row.")
