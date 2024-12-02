@@ -1,48 +1,19 @@
+import os
+import datetime
+import numpy as np
+import pandas as pd
 import streamlit as st
 from streamlit_plotly_events import plotly_events
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import plotly.graph_objects as go
 import plotly.express as px
-from sqlalchemy import create_engine
-import pandas as pd
-import numpy as np
-from overview_utlils import get_filtered_data, display_index_overview, criteria_english, criteria_mapping, display_stock_overview, column_explanations, load_css
-import time 
-import datetime
-import os
+import plotly.graph_objects as go
+from overview_utlils import get_filtered_data, display_index_overview, criteria_english, criteria_mapping, display_stock_overview, column_explanations, load_css, tooltip_dict
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 from dotenv import load_dotenv
 
 load_dotenv()
 
 conn_str = os.getenv('DATABASE_RENDER')
-
-
-custom_css = """
-    <style>
-        .main {
-            margin: 20px 40px;  /* Top-Bottom: 20px, Left-Right: 40px */
-        }
-        .block-container {
-            padding: 2rem 4rem;  /* Adjust inner padding */
-        }
-    </style>
-"""
-
-st.markdown(custom_css, unsafe_allow_html=True)
-
-st.markdown(
-    """
-    <style>
-        .selectbox-label {
-            display: none;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-
 
 def render():
     load_css("tooltip_style.css")
@@ -53,18 +24,15 @@ def render():
     stock_index = data_frames.get("stock_index")
     stock_financial_metrics = data_frames.get("financial_metrics")
 
-    
-
-
-    st.markdown("""
-    <div class="tooltip tooltip-right">
-        <h3 style="display: inline-block;">Tổng quan thị trường</h3>
-        <span class="tooltiptext">
-            Trang này cung cấp thông tin tổng quan về thị trường, bao gồm các chỉ số chính, xu hướng và biến động.
-        </span>
-    </div>
-    """, unsafe_allow_html=True)
-
+    st.markdown(
+        f"""
+            <div class="tooltip tooltip-right">
+                <h3 style="display: inline-block;">Tổng quan thị trường</h3>
+                <span class="tooltiptext">
+                    {tooltip_dict['market_overview_page']}
+                </span>
+            </div>
+        """, unsafe_allow_html=True)
 
     stock_data['trade_date'] = pd.to_datetime(stock_data['trade_date'], errors='coerce')
     stock_data = stock_data.sort_values(by='trade_date').reset_index(drop=True)
@@ -72,18 +40,15 @@ def render():
 
     one_month_before = latest_date - datetime.timedelta(days=30)
 
-    # Tạo danh sách các ngày từ hôm nay đến một tháng sau
-    date_options = [latest_date - datetime.timedelta(days=i) for i in range(0, 31)]
-
-    # Hiển thị phần markdown và date_input trên cùng một dòng
-    st.markdown("""
-        <div class="tooltip tooltip-right">
-            <h3>Đến ngày: </h3>
-            <span class="tooltiptext">
-                Chọn ngày cuối cùng mà thông tin về thị trường được tổng hợp, việc xem xét tổng quan thị trường trên nhiều ngày khác nhau sẽ đem đến sự so sánh về những biến đổi trên thị trường qua nhiều ngày
-            </span>
-        </div>
-    """, unsafe_allow_html=True)
+    st.markdown(
+        f"""
+            <div class="tooltip tooltip-right">
+                <h3>Đến ngày: </h3>
+                <span class="tooltiptext">
+                    {tooltip_dict['up_to_date']}
+                </span>
+            </div>
+        """, unsafe_allow_html=True)
 
     end_date = st.date_input(
         "Chọn ngày", 
@@ -93,7 +58,6 @@ def render():
         label_visibility="collapsed"
     )
 
-
     info_col, chart_col = st.columns([1, 3]) 
 
     with chart_col:
@@ -102,22 +66,20 @@ def render():
         with col1:
             
             st.markdown(
-                """
-                <div class="tooltip">
-                Chọn sàn chứng khoán
-                <span class="tooltiptext">
-                    Sàn chứng khoán là nơi mà các chứng khoán như cổ phiếu, trái phiếu được giao dịch. Hiện nay, ở Việt Nam đang có ba sàn chứng khoán chính sau:
-                    <ul>
-                        <li>HOSE: Sở Giao dịch Chứng khoán TP.HCM</li>
-                        <li>HNX: Sở Giao dịch Chứng khoán Hà Nội </li>
-                        <li>UPCoM: Thị trường giao dịch cổ phiếu của các công ty chưa niêm yết trên sàn chứng khoán chính thức.</li>
-                    </ul>
-                    Mỗi sàn có những đặc điểm và danh sách cổ phiếu riêng biệt. Chọn tất cả hoặc từng sàn để xem các cổ phiếu giao dịch tại đó.
-                </span>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+                f"""
+                    <div class="tooltip">
+                    Chọn sàn chứng khoán
+                        <span class="tooltiptext">
+                            Sàn chứng khoán là nơi mà các chứng khoán như cổ phiếu, trái phiếu được giao dịch. Hiện nay, ở Việt Nam đang có ba sàn chứng khoán chính sau:
+                                        <ul>
+                                            <li>HOSE: Sở Giao dịch Chứng khoán TP.HCM</li>
+                                            <li>HNX: Sở Giao dịch Chứng khoán Hà Nội </li>
+                                            <li>UPCoM: Thị trường giao dịch cổ phiếu của các công ty chưa niêm yết trên sàn chứng khoán chính thức.</li>
+                                        </ul>
+                                        Mỗi sàn có những đặc điểm và danh sách cổ phiếu riêng biệt. Chọn tất cả hoặc từng sàn để xem các cổ phiếu giao dịch tại đó.
+                        </span>
+                    </div>
+                """,unsafe_allow_html=True)
 
             exchange_filter = st.selectbox(
                 "exchange",
@@ -136,16 +98,15 @@ def render():
         with col2:
 
             st.markdown(
-            """
-            <div class="tooltip">
-            Chọn ngành
-            <span class="tooltiptext"> 
-            Lựa chọn ngành kinh tế mà bạn muốn xem, có thể là bất kỳ ngành nào từ danh sách các ngành hiện có.
-            Các mã chứng khoán sẽ được nhóm theo ngành tương ứng của chúng để dễ dàng so sánh và phân tích.</span>
-            </div>
-            """,
-            unsafe_allow_html=True,
-            )
+                f"""
+                    <div class="tooltip">
+                    Chọn ngành
+                        <span class="tooltiptext"> 
+                                {tooltip_dict['industry_explaination']}
+                        </span>
+                    </div>
+                """,
+                unsafe_allow_html=True,)
 
             industry_filter = st.selectbox(
                 "industry",
@@ -319,7 +280,7 @@ def render():
         latest_stock_index_date = stock_index['trading_date'].max()
         latest_index_data = stock_index[stock_index['trading_date'] == latest_stock_index_date]
 
-        st.table(latest_index_data)
+        # st.table(latest_index_data)
 
         gb = GridOptionsBuilder.from_dataframe(latest_index_data)
         gb.configure_selection("single", use_checkbox=False)  # Enable single-row selection
@@ -339,54 +300,54 @@ def render():
         else:
             st.info("No row selected. Please select a row.")
         
-
         
+   
     with col_1:
-        st.subheader("Biến động của các chỉ số Index")
+        time_period_options = ["5D", "1M", "3M", "6M", "YTD", "1Y", "ALL"]
+        selected_period_label = st.radio("Lựa chọn khoảng thời gian", time_period_options, horizontal=True)
 
-        time_period_tabs = st.tabs(["1D", "5D", "1M", "3M", "6M", "YTD", "1Y", "ALL"])
-        
-        # Gán giá trị thời gian tương ứng với mỗi tab
+        # Map the selected time period to days
         time_delta_mapping = {
-            "1D": 1,
             "5D": 5,
             "1M": 30,
             "3M": 90,
             "6M": 180,
             "YTD": pd.Timestamp.today().day_of_year,  # Từ đầu năm đến hiện tại
             "1Y": 365,
-            "ALL": None  # Không giới hạn thời gian
+            "ALL": None  # No time limit
         }
-        
-        for tab, (label, days) in zip(time_period_tabs, time_delta_mapping.items()):
-            with tab:
-                st.write(f"Lựa chọn khoảng thời gian: {label}")
-                selected_period = days
 
-        # Xác định khoảng thời gian bắt đầu và kết thúc
+        # Get the corresponding days for the selected period
+        selected_period = time_delta_mapping[selected_period_label]
+
+        # Calculate the start and end date
         end_date = pd.Timestamp.today()
+
+        # Handle the start date based on selected period
         if selected_period is None:  # Trường hợp ALL
             start_date = stock_index['trading_date'].min()  # Lấy giá trị nhỏ nhất từ dữ liệu
         else:
             start_date = end_date - pd.Timedelta(days=selected_period)
-        
 
-        stock_index = stock_index.sort_values(by='trading_date').reset_index(drop=True)
-       
-        
+        # Ensure 'trading_date' is in datetime format
+        stock_index['trading_date'] = pd.to_datetime(stock_index['trading_date'])
+
+        # Filter the data for the selected period and stock code
         index_data = stock_index[(stock_index['stock_code'] == selected_index_stock_code) & 
                                 (stock_index['trading_date'] >= start_date)]
-        
-        # Vẽ biểu đồ
+
+        # Sort the data by trading_date
+        index_data = index_data.sort_values(by='trading_date').reset_index(drop=True)
+
+        # Plot the data using Plotly
         index_fig = px.line(
             index_data,
             x='trading_date', 
             y='closing_price', 
             color='stock_code',
-            labels={'closing_price': 'Giá đóng cửa', 'trade_date': 'Ngày giao dịch'}
+            labels={'closing_price': 'Giá đóng cửa', 'trading_date': 'Ngày giao dịch'}
         )
         st.plotly_chart(index_fig, use_container_width=True)
-
 
 
 
@@ -458,19 +419,20 @@ def render():
 
     st.subheader("Top 10 cổ phiếu theo chỉ số")
 
+
     stock_financial_metrics['date'] = pd.to_datetime(stock_financial_metrics['date'], errors='coerce')
     stock_financial_metrics = stock_financial_metrics.sort_values(by='date').reset_index(drop=True)
     # st.table(stock_financial_metrics.head(10))
+    lastest_date = stock_financial_metrics['date'].max()
+    st.write(lastest_date.head())
 
 
-    latest_date = stock_financial_metrics['date'].max()
-    latest_finance_data = stock_financial_metrics[stock_financial_metrics['date'] == latest_date]
+    lastest_finance_data = stock_financial_metrics[stock_financial_metrics['date'] == lastest_date]
 
+    # st.table(lastest_finance_data)
     top_10_stock = stock_data[['stock_code', 'market_capitalization', 'closing_price', 'price_change', 'price_change_percentage']]
     top_10_stock['price_change'] = top_10_stock['price_change'].apply(lambda x: f"{x} ({top_10_stock['price_change_percentage']}%)")
     top_10_stock = top_10_stock.sort_values(by='market_capitalization', ascending=False).reset_index(drop=True)
-
-
 
 
     metrics = {
@@ -485,8 +447,8 @@ def render():
     # Populate each tab with data
     for tab, (tab_name, column) in zip(tabs, metrics.items()):
         with tab:
-            sorted_data = latest_finance_data.sort_values(by=column, ascending=False).head(10)
-            st.table(sorted_data)
+            sorted_data = lastest_finance_data.sort_values(by=column, ascending=False).head(10)
+            st.table(sorted_data.head())
 
     # col1, col2 = st.columns(2)
 

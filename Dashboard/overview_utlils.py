@@ -198,10 +198,29 @@ column_explanations = {
 
 def load_css(file_name):
     css_path = os.path.join(os.path.dirname(__file__), file_name)
-    with open(css_path, "r") as f:
+    with open(css_path, "r", encoding="utf-8") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # Load external HTML file (optional)
 def load_html(file_name):
     with open(file_name, "r") as f:
         st.markdown(f.read(), unsafe_allow_html=True)
+
+tooltip_dict = {
+    "market_overview_page": "Trang này cung cấp thông tin tổng quan về thị trường, bao gồm các chỉ số chính, xu hướng và biến động.",
+    "up_to_date" : "Chọn ngày cuối cùng mà thông tin về thị trường được tổng hợp, việc xem xét tổng quan thị trường trên nhiều ngày khác nhau sẽ đem đến sự so sánh về những biến đổi trên thị trường qua nhiều ngày.",
+    "stock_exchange_explaination" : """
+                                        Sàn chứng khoán là nơi mà các chứng khoán như cổ phiếu, trái phiếu được giao dịch. Hiện nay, ở Việt Nam đang có ba sàn chứng khoán chính sau:
+                                        <ul>
+                                            <li>HOSE: Sở Giao dịch Chứng khoán TP.HCM</li>
+                                            <li>HNX: Sở Giao dịch Chứng khoán Hà Nội </li>
+                                            <li>UPCoM: Thị trường giao dịch cổ phiếu của các công ty chưa niêm yết trên sàn chứng khoán chính thức.</li>
+                                        </ul>
+                                        Mỗi sàn có những đặc điểm và danh sách cổ phiếu riêng biệt. Chọn tất cả hoặc từng sàn để xem các cổ phiếu giao dịch tại đó.
+                                    """,
+
+    "industry_explaination" : """ Lựa chọn ngành kinh tế mà bạn muốn xem, có thể là bất kỳ ngành nào từ danh sách các ngành hiện có.
+                                    Các mã chứng khoán sẽ được nhóm theo ngành tương ứng của chúng để dễ dàng so sánh và phân tích."""
+                                    ,
+    
+}

@@ -1,17 +1,63 @@
 # data_loader.py
 import pandas as pd
-import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from sqlalchemy import create_engine
 import streamlit as st
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+
+# PostgreSQL connection string
+conn_str = os.getenv('DATABASE_RENDER')
+
+# Default columns for stock_data
+stock_data_necessary_columns = [
+    'trade_date',
+    'stock_code',
+    'listed_shares',
+    'shares_outstanding',
+    'reference_price',
+    'ceiling_price',
+    'floor_price',
+    'closing_price',
+    'price_change',
+    'price_change_percentage',
+    'market_capitalization',
+    'matched_orders_volume',
+    'matched_orders_value',
+    'agreements_volume',
+    'agreements_value',
+    'total_trading_volume',
+    'total_trading_value'
+]
+stock_index_necessary_columns = [
+    'trading_date',
+    'stock_code',
+    'closing_price',
+    'price_change',
+    'price_change_percentage',
+]
+
+columns_map = {
+    "stock_data": stock_data_necessary_columns,
+    "stock_index": stock_index_necessary_columns,
+}
 @st.cache_data
-def load_all_tables():
+def load_all_tables(columns_map=columns_map):
+    """
+    Load all tables from the database. Optionally, specify columns for each table using columns_map.
+    :param columns_map: A dictionary where the key is the table name and the value is a list of columns to query.
+    :return: A dictionary of DataFrames, keyed by table name.
+    """
     tables = ["stock_data", "stock_info", "financial_metrics", "stock_index"]
     data_frames = {}
 
     with ThreadPoolExecutor() as executor:
-        future_to_table = {executor.submit(load_data, table): table for table in tables}
+        future_to_table = {
+            executor.submit(load_data, table, columns_map.get(table,None) if columns_map else None): table 
+            for table in tables
+        }
         for future in as_completed(future_to_table):
             table = future_to_table[future]
             try:
@@ -22,18 +68,17 @@ def load_all_tables():
 
     return data_frames
 
+@st.cache_data
+def load_data(table_name, columns=None):
+  
+    engine = create_engine(conn_str)
+    # Build SQL query
+    columns_query = ", ".join(columns) if columns else "*"
+    query = f"SELECT {columns_query} FROM {table_name}"
+    
+    return pd.read_sql(query, engine)
 
 @st.cache_data
-def load_data(table_name):
-    engine = create_engine(
-        "postgresql://stock_data_i36c_user:YLMLHhfjF7oIdi3SMzexVaobFuaL37Dc@dpg-csro9ppu0jms73e1epb0-a.singapore-postgres.render.com/stock_data_i36c"
-    )
-    return pd.read_sql(f"SELECT * FROM {table_name}", engine)
+def load_stock_data(columns=None):
 
-
-@st.cache_data
-def load_stock_data():
-    engine = create_engine(
-        "postgresql://stock_data_i36c_user:YLMLHhfjF7oIdi3SMzexVaobFuaL37Dc@dpg-csro9ppu0jms73e1epb0-a.singapore-postgres.render.com/stock_data_i36c"
-    )
-    return pd.read_sql("SELECT * FROM stock_data", engine)
+    return load_data("stock_data", columns if columns else stock_data_necessary_columns)
