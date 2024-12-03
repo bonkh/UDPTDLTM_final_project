@@ -1,78 +1,29 @@
-# Cấu hình Apache Airflow
-
-``` terminal
-<!-- Cài đặt cho một chương trình airflow docker -->
-
-docker --version
-docker-compose --version
-Invoke-WebRequest -Uri 'https://airflow.apache.org/docs/apache-airflow/2.10.2/docker-compose.yaml' -OutFile 'docker-compose.yaml'
-```
+# Ứng dụng phân tích chỉ số chứng Khoán Vietstock
+Ứng dụng phân tích dữ liệu thông minh
 
 
-**Thay đổi môi trường**
-``` yaml
-    x-airflow-common:
-    &airflow-common
-    # In order to add custom dependencies or upgrade provider packages you can use your extended image.
-    # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
-    # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
-    # image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.10.2}
-    build: .
+| Họ và tên                    | MSSV     | Github            |
+| ---------------------------- | -------- | ----------------- |
+| Nguyễn Văn Quang Hưng        | 21120247 | @HungLVT          |
+| Huỳnh Cao Khôi               | 21120275 | @bonkh            |
+| Hoàng Trung Nam              | 21120290 | @HTNam1710        |
+| Chiêm Bỉnh Nguyên            | 21120294 | @DSGrid23         |
+| Huỳnh Trí Nhân               | 21120302 | @HuynhTriNhan     |
+| Nguyễn Đức Mạnh              | 20120019 | @manhhk15         |
 
 
-  airflow-webserver:
-    build:
-      context: .  
-      dockerfile: Dockerfile 
-    env_file:
-      - .env
-    
-  airflow-scheduler:
-    build:
-      context: .  
-      dockerfile: Dockerfile
-    env_file:
-      - .env
+## 1. Giới thiệu 
+- Ứng dụng phân tích chỉ số chứng khoán Vietstock là ứng dụng giúp người dùng có thể phân tích dữ liệu chứng khoán một cách nhanh chóng và hiệu quả. Ứng dụng sử dụng dữ liệu từ trang web [Vietstock](https://finance.vietstock.vn/ket-qua-giao-dich?tab=thong-ke-gia).
 
+### 1.1 Công nghệ sử dụng
+- Airflow: Lập lịch thu thập các chỉ số chứng khoáng hằng ngày
+- Streamlit: Hiển thị dữ liệu chứng khoán và phân tích dữ liệu
+- Docker: Containerize ứng dụng
+- RAG (Retrieval-Augmented Generation): Mô hình chatbot trả lời câu hỏi về dữ liệu chứng khoán
 
-  airflow-worker:
-    build:
-      context: .  
-      dockerfile: Dockerfile 
-    env_file:
-      - .env
-```
+## 2. Cài đặt
+### 2.1. Cài đặt môi trường Airflow 
+- Đọc file hướng dẫn trong `dags/README.md`
 
-**Tạo các thư mục cần thiết cho Apache Airflow**
-``` terminal
-mkdir -p ./dags, ./logs, ./plugins
-```
-# Tạo dabase cho Apache Airflow
-- Tải extension PosgreSQL cho Apache Airflow
-- Sử dung trang [Render](https://dashboard.render.com/) để tạo một database PosgreSQL
-- Dán link database vào file .env với tên là `DATABASE_RENDER`
-- Sử dụng extentension PostgresSQL tạo 1 connection dán cái link vào từ sau dấu `@` đến hết `.com` trong `DATABASE_RENDER`
-- Lấy thông tin trên website để kết nối vào
-
-# Tạo các bảng cho database
-- Sử dụng lệnh `python .\create_and_insert_stock_info_table.py` để tạo các bảng cho database
-- Tạo bảng create_and_insert_stock_info đầu tiên sau đó mới tạo các bảng khác
-
-# Khởi chạy Apache Airflow
-``` terminal
-<!-- initialize Apache Airflow with the following command: -->
-docker-compose up airflow-init
-
-<!-- start Apache Airflow with the following command: -->
-docker-compose up -d
-
-<!-- to check the status of the services -->
-docker-compose ps 
-
-<!-- to check the logs of the services -->
-docker exec -it [name of container websever] env
-
-
-<!-- to stop Apache Airflow -->
-docker-compose down
-``` 
+### 2.2. Cài đặt môi trường Streamlit
+- Đọc file hướng dẫn trong `Dashboard/README.md`

@@ -18,6 +18,7 @@ from tensorflow.keras.layers import Dense, LSTM
 from math import ceil, sqrt
 import datetime
 import warnings
+from data_loader import load_all_tables
 
 warnings.filterwarnings("ignore")
 
@@ -27,25 +28,23 @@ llm = ChatOpenAI(
     model="gpt-4o-mini", openai_api_key=os.getenv("OPENAI_API_KEY")
 )
 
+def setup_page():
+    st.set_page_config(
+        page_title="Detail Stock Information ",
+        page_icon="📈",
+        layout="wide",
+    )
+
+setup_page()
+
 def remove_json_formatting(input_text):
     # Loại bỏ dấu ```json và ``` nếu chúng có trong input_text
     cleaned_text = input_text.strip("```json").strip("```").strip()
     return cleaned_text
 
-# @st.cache_data 
-# def load_stock_data():
-#     engine = create_engine('postgresql://stock_data_i36c_user:YLMLHhfjF7oIdi3SMzexVaobFuaL37Dc@dpg-csro9ppu0jms73e1epb0-a.singapore-postgres.render.com/stock_data_i36c')
-
-#     return pd.read_sql("SELECT * FROM stock_data", engine)
-
-# def load_stock_info():
-#     engine = create_engine('postgresql://stock_data_i36c_user:YLMLHhfjF7oIdi3SMzexVaobFuaL37Dc@dpg-csro9ppu0jms73e1epb0-a.singapore-postgres.render.com/stock_data_i36c')
-
-#     return pd.read_sql("SELECT * FROM stock_info", engine)
-
-# data = load_stock_data()
-
-# info = load_stock_info()
+if "data_frames" not in st.session_state:
+    st.session_state["data_frames"] = load_all_tables()
+    
 
 data_frames = st.session_state["data_frames"]
 data = data_frames.get("stock_data", pd.DataFrame())
@@ -516,21 +515,46 @@ data = {
     "lowest_price": stock_data["lowest_price"].values.tolist(),
     "reference_price": stock_data["reference_price"].values.tolist(),
     "price_change": stock_data["price_change"].values.tolist(),
-    "price_change_percentage": stock_data[
-        "price_change_percentage"
-    ].values.tolist(),
-    "difference": stock_data["difference"].values.tolist(),
-    "average_price": stock_data["average_price"].values.tolist(),
-    "adjusted_closing_price": stock_data[
-        "adjusted_closing_price"
-    ].values.tolist(),
+    "price_change_percentage": stock_data["price_change_percentage"].values.tolist(),
+    # "difference": stock_data["difference"].values.tolist(),
+    # "average_price": stock_data["average_price"].values.tolist(),
+    # "adjusted_closing_price": stock_data[
+    #     "adjusted_closing_price"
+    # ].values.tolist(),
     "total_trading_volume": stock_data["total_trading_volume"].values.tolist(),
     "total_trading_value": stock_data["total_trading_value"].values.tolist(),
-    "buy_limit": stock_data["buy_limit"].values.tolist(),
-    "sell_limit": stock_data["sell_limit"].values.tolist(),
+    # "buy_limit": stock_data["buy_limit"].values.tolist(),
+    # "sell_limit": stock_data["sell_limit"].values.tolist(),
 }
 
 # Định nghĩa chuỗi system với các dấu {} được thoát
+# system = """You are an expert at Stock analysis.  
+# Here is the context you should refer to:  
+# Your task is to analyze the stock performance over the past month based on the provided metrics. Use the following data points extracted from the stock dataset:
+# - stock_code: {stock_code} (Mã cổ phiếu).  
+# - opening_price: {opening_price} (Giá mở cửa mỗi ngày).  
+# - closing_price: {closing_price} (Giá đóng cửa mỗi ngày).  
+# - highest_price: {highest_price} (Giá cao nhất trong ngày).  
+# - lowest_price: {lowest_price} (Giá thấp nhất trong ngày).  
+# - reference_price: {reference_price} (Giá tham chiếu để đánh giá mức tăng hoặc giảm).  
+# - price_change: {price_change} (Sự thay đổi giá trong ngày).  
+# - price_change_percentage: {price_change_percentage} (Phần trăm thay đổi giá mỗi ngày).  
+# - difference: {difference} (Mức dao động giá trong ngày).  
+# - average_price: {average_price} (Giá trung bình giao dịch mỗi ngày).  
+# - adjusted_closing_price: {adjusted_closing_price} (Giá đóng cửa điều chỉnh, nếu có).  
+# - total_trading_volume: {total_trading_volume} (Tổng khối lượng giao dịch trong ngày).  
+# - total_trading_value: {total_trading_value} (Tổng giá trị giao dịch trong ngày).  
+# - buy_limit: {buy_limit} (Giới hạn mua, thể hiện áp lực mua).  
+# - sell_limit: {sell_limit} (Giới hạn bán, thể hiện áp lực bán).
+
+# Your response must be in Vietnamese and in JSON format with the following structure:  
+# ```json
+# {{
+#   "question": "What is the stock performance over the past month?",
+#   "answer": "Your detailed analysis based on the context and data"
+# }}
+# """
+
 system = """You are an expert at Stock analysis.  
 Here is the context you should refer to:  
 Your task is to analyze the stock performance over the past month based on the provided metrics. Use the following data points extracted from the stock dataset:
@@ -541,14 +565,9 @@ Your task is to analyze the stock performance over the past month based on the p
 - lowest_price: {lowest_price} (Giá thấp nhất trong ngày).  
 - reference_price: {reference_price} (Giá tham chiếu để đánh giá mức tăng hoặc giảm).  
 - price_change: {price_change} (Sự thay đổi giá trong ngày).  
-- price_change_percentage: {price_change_percentage} (Phần trăm thay đổi giá mỗi ngày).  
-- difference: {difference} (Mức dao động giá trong ngày).  
-- average_price: {average_price} (Giá trung bình giao dịch mỗi ngày).  
-- adjusted_closing_price: {adjusted_closing_price} (Giá đóng cửa điều chỉnh, nếu có).  
+- price_change_percentage: {price_change_percentage} (Phần trăm thay đổi giá mỗi ngày).   
 - total_trading_volume: {total_trading_volume} (Tổng khối lượng giao dịch trong ngày).  
 - total_trading_value: {total_trading_value} (Tổng giá trị giao dịch trong ngày).  
-- buy_limit: {buy_limit} (Giới hạn mua, thể hiện áp lực mua).  
-- sell_limit: {sell_limit} (Giới hạn bán, thể hiện áp lực bán).
 
 Your response must be in Vietnamese and in JSON format with the following structure:  
 ```json

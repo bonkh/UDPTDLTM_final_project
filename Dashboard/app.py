@@ -1,56 +1,98 @@
 import streamlit as st
-from streamlit.components.v1 import html
+import plotly.express as px
+import pandas as pd
 
-# Tooltip content stored in a dictionary
-tooltip_dict = {
-    "stock_exchange_explanation": """
-        <p>Sàn chứng khoán là nơi mà các chứng khoán như cổ phiếu, trái phiếu được giao dịch. Hiện nay, ở Việt Nam đang có ba sàn chứng khoán chính sau:</p>
-        <ul>
-            <li>HOSE: Sở Giao dịch Chứng khoán TP.HCM</li>
-            <li>HNX: Sở Giao dịch Chứng khoán Hà Nội</li>
-            <li>UPCoM: Thị trường giao dịch cổ phiếu của các công ty chưa niêm yết trên sàn chứng khoán chính thức.</li>
-        </ul>
-        <p>Mỗi sàn có những đặc điểm và danh sách cổ phiếu riêng biệt. Chọn tất cả hoặc từng sàn để xem các cổ phiếu giao dịch tại đó.</p>
-    """
-}
+# Sample data
+df = pd.DataFrame({
+    'industry_name': ['Tech', 'Finance', 'Health'],
+    'code': ['AAPL', 'GOOGL', 'AMZN'],
+    'value': [100, 200, 150],
+    'price_change_percentage': [1.5, -2.0, 0.8],
+    'color': [1, -1, 0]
+})
 
-# Tooltip HTML structure with CSS
-tooltip_html = f"""
-    <style>
-        .tooltip {{
-            position: relative;
-            display: inline-block;
-            cursor: pointer;
-        }}
-        .tooltip .tooltiptext {{
-            visibility: hidden;
-            width: 300px;
-            background-color: black;
-            color: #fff;
-            text-align: left;
-            border-radius: 6px;
-            padding: 10px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -150px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }}
-        .tooltip:hover .tooltiptext {{
-            visibility: visible;
-            opacity: 1;
-        }}
-    </style>
+criteria_mapping = {'value': 'Giá trị giao dịch'}
 
-    <div class="tooltip">
-        Chọn sàn chứng khoán
+# Create the Plotly treemap
+fig = px.treemap(
+    data_frame=df,
+    path=['industry_name', 'code'],
+    values='value',
+    hover_data=['price_change_percentage'],
+    color='color',
+    color_discrete_map={'-1': '#FF2929', '0': '#F6E96B', '1': '#399918'}
+)
+
+# Remove title spacing by setting margin.t = 0
+fig.update_layout(
+    margin=dict(t=0, l=20, r=20, b=20),
+    font=dict(size=10, weight="bold")
+)
+
+# Tooltip title with description
+tooltip_title = f"""
+    <div class="tooltip-title">
+        <h3 style="display: inline-block; font-family: Arial, sans-serif; font-size: 24px; color: black; margin: 0;">
+            Tổng quan thị trường dựa trên tiêu chí 
+            <span style="color: #FF6347;">{criteria_mapping['value']}</span>
+        </h3>
         <span class="tooltiptext">
-            {tooltip_dict["stock_exchange_explanation"]}
+            Biểu đồ này thể hiện tổng quan thị trường dựa trên tiêu chí 
+            <span style='color: #FF6347;'><b>{criteria_mapping['value']}</b></span>. 
+            <ul>
+                <li>Mỗi ô đại diện cho một cổ phiếu.</li>
+                <li>Kích thước ô biểu thị giá trị giao dịch.</li>
+                <li>Màu sắc cho biết mức tăng/giảm giá so với ngày trước đó.</li>
+            </ul>
         </span>
     </div>
 """
 
-# Use Streamlit's HTML renderer for full control
-html(tooltip_html, height=250)
+# Render tooltip title and set position
+st.markdown(
+    f"""
+    <style>
+        .tooltip-title {{
+
+            top: 30px; /* Đặt vị trí so với đỉnh container */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            cursor: pointer;
+            text-align: center;
+        }}
+
+        .tooltip-title .tooltiptext {{
+            visibility: hidden;
+            width: 350px;
+            background-color: #f9f9f9;
+            color: #333;
+            text-align: left;
+            border-radius: 5px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            top: 120%; 
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+        }}
+
+        .tooltip-title:hover .tooltiptext {{
+            visibility: visible;
+        }}
+
+        .stPlotlyChart {{
+            position: relative;
+        }}
+    </style>
+
+    {tooltip_title}
+    """,
+    unsafe_allow_html=True,
+)
+
+# Display the Plotly chart
+st.plotly_chart(fig, use_container_width=True)
