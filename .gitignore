@@ -2,3 +2,7 @@
 /plugins/
 __pycache__/
 .env.local
+vector_db/
+logs/
+plugins/
+config/

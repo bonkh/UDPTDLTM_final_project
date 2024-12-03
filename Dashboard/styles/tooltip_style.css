@@ -67,4 +67,11 @@
     padding-right: 10px;
 } 
 
-
+.header_style {
+  font-size: 50px; /* Adjust font size */
+  color: #384B70; /* Set the text color */
+  text-transform: uppercase; /* Make text uppercase */
+  font-weight: bold; /* Make the text bold */
+  letter-spacing: 2px; /* Add letter spacing */
+  text-shadow: 2px 2px 5px #FCFAEE; /* Add a subtle text shadow */
+}

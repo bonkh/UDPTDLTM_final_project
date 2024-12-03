@@ -1,4 +1,4 @@
-streamlit==1.29.0
+streamlit==1.39.0
 streamlit-elements
 scikit-learn
 plotly
@@ -11,3 +11,12 @@ numpy
 ipywidgets
 IPython
 streamlit_plotly_events
+streamlit_aggrid
+tensorflow
+keras
+langchain
+langchain_chroma
+langchain_community
+langchain_huggingface
+underthesea
+rank_bm25
