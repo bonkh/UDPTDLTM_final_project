@@ -14,3 +14,12 @@ streamlit_plotly_events
 streamlit_aggrid
 tensorflow
 keras
+langchain_community
+langchain_chroma
+langchain_huggingface
+langchain_text_splitters
+langchain_openai
+langchain_core
+underthesea
+logging
+rank_bm25

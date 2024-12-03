@@ -18,6 +18,8 @@ from tensorflow.keras.layers import Dense, LSTM
 from math import ceil, sqrt
 import datetime
 import warnings
+from models.chroma_loader import load_existing_chroma_db
+from models.rag_retriever_handler_dashboard import generate_answer
 
 warnings.filterwarnings("ignore")
 
@@ -602,5 +604,57 @@ with st.spinner("Đang phân tích..."):
 # Hiển thị kết quả nếu có
 if st.session_state.analysis_result:
     with st.container():
-        st.write("*Kết quả phân tích:*")
+        st.write("### Kết quả phân tích:")
         st.write(response)
+
+def load_vectordb(db_path):
+    vector_db = load_existing_chroma_db(db_path)
+    print(f"Number of documents in vector DB: {len(vector_db.get())}")
+    return vector_db
+
+
+# Thêm thông tin báo về cổ phiếu
+if "stock_news" not in st.session_state:
+    st.session_state.stock_news = None
+
+with st.spinner("Đang tìm kiếm thông tin cổ phiếu..."):
+    vector_db = load_vectordb("vector_db")
+    query_news = f"Thông tin cổ phiếu {company_name} {stock_code}"
+    output = generate_answer(vector_db, query_news, top_k=10)
+    output = json.loads(output)
+    links = output["links"]
+    titles = output["titles"]
+    date = output["date"]
+    stock_news = {"links": links, "titles": titles, "date": date}
+    st.session_state.stock_news = output
+
+
+def sorted_news(news):
+    news["date"] = [datetime.datetime.strptime(date, "%d/%m/%Y") for date in news["date"]]  # Chuyển đổi ngày thành datetime
+    # Sắp xếp theo ngày
+    sorted_news = {
+        "links": [],
+        "titles": [],
+        "date": [],
+    }
+    sorted_news["links"], sorted_news["titles"], sorted_news["date"] = zip(
+        *sorted(
+            zip(news["links"], news["titles"], news["date"]),
+            key=lambda x: x[2],
+            reverse=True,
+        )
+    )
+    return sorted_news
+
+
+# Hiển thị thông tin cổ phiếu
+if st.session_state.stock_news:
+    with st.container():
+        st.write(f"### Tóm tắt các bài báo liên quan cổ phiếu {stock_code}:")
+        st.write(output["answer"])
+        st.write("### Tin tức mới nhất:")
+        sorted_news = sorted_news(st.session_state.stock_news)
+        for link, title, date in zip(sorted_news["links"], sorted_news["titles"], sorted_news["date"]):
+            st.markdown(f"[{title}]({link}) - {date.strftime('%d/%m/%Y')}")
+        
+

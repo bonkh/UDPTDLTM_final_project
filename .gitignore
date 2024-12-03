@@ -6,3 +6,5 @@ vector_db/
 logs/
 plugins/
 config/
+venv/
+.env
