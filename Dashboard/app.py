@@ -3,7 +3,8 @@ import json
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 
-
+import requests
+from bs4 import BeautifulSoup
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -343,6 +344,8 @@ st.title('Dashboard phân tích chi tiết cổ phiếu')
 st.sidebar.subheader('Chọn Mã Cổ Phiếu')
 stock_code = st.sidebar.selectbox('Mã cổ phiếu', options=data['stock_code'].unique(), index=data['stock_code'].unique().tolist().index('VCB'))
 
+
+
 # Lọc dữ liệu theo mã cổ phiếu đã chọn
 stock_data = data[data['stock_code'] == stock_code]
 
@@ -438,6 +441,157 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+headers = {
+        'Server':'nginx',
+        'Accept': '*/*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Connection': 'keep-alive',
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0',
+    }
+
+# Hàm lấy token
+def get_request_token(stock_code, cookies):
+    url = f'https://finance.vietstock.vn/{stock_code}/thong-ke-giao-dich.htm'
+    response = requests.get(url, headers=headers, cookies=cookies)
+    
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.text, 'html.parser')
+        token_element = soup.find('input', {'name': '__RequestVerificationToken'})
+        if token_element:
+            return token_element.get('value')
+        else:
+            print("Không tìm thấy token.")
+    return None
+
+# Hàm lấy dữ liệu giao dịch trong ngày và chuyển thành DataFrame
+def get_stock_data(stock_code, cookies):
+    # Lấy token
+    token = get_request_token(stock_code, cookies)
+    
+    url = 'https://finance.vietstock.vn/data/getstockdealdetailbytime'
+    
+    # Dữ liệu gửi đi
+    body = {
+        'code': stock_code,
+        'interval': '1',
+        '__RequestVerificationToken': token
+    }
+
+    # Gửi yêu cầu POST
+    response = requests.post(url, headers=headers, data=body, cookies=cookies)
+
+    # Chuyển dữ liệu JSON thành DataFrame
+    jsondata = json.loads(response.text)
+    oneday_df = pd.DataFrame(jsondata)
+    
+    # Tiền xử lý dữ liệu
+    oneday_df.drop(columns=['TradingDate', 'Timetype','Max','Min'], inplace=True)
+    oneday_df['TradingDateStr'] = pd.to_datetime(oneday_df['TradingDateStr'])
+    oneday_df['TradingDateStr'] = oneday_df['TradingDateStr'].dt.strftime('%H:%M:%S')
+    
+    # Đổi tên cột
+    oneday_df.rename(columns={'TradingDateStr':'Thời gian','Price':'Giá','Vol':'KL Lô','Package':'KL tích luỹ'}, inplace=True)
+    
+    # Sắp xếp theo thời gian
+    oneday_df = oneday_df[['Thời gian','Giá','KL Lô','KL tích luỹ']]
+    oneday_df = oneday_df.sort_values(by='Thời gian')
+    oneday_df['Thời gian'] = pd.to_datetime(oneday_df['Thời gian'], errors='coerce')
+    
+    return oneday_df
+
+# Hàm vẽ biểu đồ
+def plot_stock_data(oneday_df, stock_code):
+    # Nhóm dữ liệu theo 5 phút
+    grouped_df = oneday_df.groupby(pd.Grouper(key='Thời gian', freq='5T')).mean().reset_index()
+    grouped_df.fillna(method='ffill', inplace=True)
+    
+    # Tạo biểu đồ con cho Giá và KL tích luỹ
+    fig = make_subplots(
+        rows=2, cols=1, 
+        shared_xaxes=True,  # Chia sẻ trục X
+        vertical_spacing=0.1,  # Khoảng cách giữa 2 biểu đồ
+        subplot_titles=(
+            f'Biểu đồ Giá theo thời gian thực của {stock_code}', 
+            f'Biểu đồ Khối lượng tích luỹ theo thời gian thực của {stock_code}'
+        ),
+        row_heights=[0.7, 0.3]  # Điều chỉnh chiều cao cho từng biểu đồ
+    )
+
+    # Vẽ biểu đồ đường cho 'Giá'
+    fig.add_trace(
+        go.Scatter(x=grouped_df['Thời gian'], y=grouped_df['Giá'], 
+                   mode='lines', name='Giá', line=dict(color='blue')),
+        row=1, col=1
+    )
+
+    # Vẽ biểu đồ cột cho 'KL tích luỹ'
+    fig.add_trace(
+        go.Bar(x=grouped_df['Thời gian'], y=grouped_df['KL tích luỹ'],
+               name='Khối lượng tích luỹ', marker=dict(color='rgba(144,238,144,0.8)')),
+        row=2, col=1
+    )
+
+    # Cập nhật layout
+    fig.update_layout(
+        title=f'Biểu đồ Giá và Khối lượng tích luỹ theo thời gian thực của {stock_code}',
+        xaxis=dict(
+            showticklabels=False  # Tắt nhãn trục X trên cùng
+        ),
+        xaxis2=dict(
+            title='Thời gian',    # Hiển thị nhãn ở trục X dưới cùng
+            showticklabels=True   # Bật nhãn ở dưới
+        ),
+        yaxis_title='Giá',
+        yaxis2_title='Khối lượng tích luỹ',
+        height=700,  # Chiều cao tổng thể của cả figure
+        showlegend=True
+    )
+    
+    # Hiển thị biểu đồ trong Streamlit
+    st.plotly_chart(fig)
+
+
+# Hàm chính để tích hợp toàn bộ quy trình
+def plot_real_time(stock_code, cookies):
+    st.markdown(
+        f"""
+        <div style="
+            background-color: #f9f9f9; 
+            border-radius: 8px; 
+            padding: 16px; 
+            margin-bottom: 16px; 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        ">
+        <h4 style="color: #4CAF50; margin-bottom: 8px;">Biến động trong ngày</h4>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # Lấy dữ liệu và hiển thị
+    oneday_df = get_stock_data(stock_code, cookies)
+    st.write(oneday_df)
+    
+    # Vẽ biểu đồ
+    plot_stock_data(oneday_df, stock_code)
+
+# Tạo một session để giữ cookies
+session = requests.Session()
+
+# Gửi yêu cầu GET tới trang web bạn muốn lấy cookies
+response = session.get('https://finance.vietstock.vn/ACB/thong-ke-giao-dich.htm',headers=headers)
+
+# In ra cookies đã nhận được
+request_token=session.cookies.get_dict()['__RequestVerificationToken']
+
+cookies = {
+        '__RequestVerificationToken':request_token
+       }
+
+plot_real_time(stock_code, cookies)
 
 # Ngày mới nhất trong dữ liệu
 today = stock_data['trade_date'].max()
