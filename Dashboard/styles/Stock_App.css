@@ -8,84 +8,60 @@ body {
 }
 
 /* Custom styling for headers */
-h1, h2, h3, h4, h5, h6 {
-    color: #1a73e8;
+h1, h2 {
+    color: #384B70;
     font-weight: 600;
 }
 
 /* Styling for main title */
 .stMarkdown h1.title {
-    color: #003f5c;
+    color: #4c8c8f;
     font-size: 2.5em;
+    text-align: center;
+    margin-bottom: 20px;
+    border-bottom: 4px solid #4c8c8f;
+}
+.intro-text{
+    color : #971047;
+    font-size: 1.5em;
     text-align: center;
     margin-bottom: 20px;
 }
 
-/* Custom card styling for articles */
-.article-card {
-    background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    margin-bottom: 20px;
-    transition: transform 0.2s ease-in-out;
-}
-
-.article-card:hover {
-    transform: scale(1.02);
-}
-
-/* Icon for hot news */
-.hot-news-icon {
-    color: #ff4500;
-    font-size: 1.5em;
-    margin-right: 10px;
-}
-
-/* Button styling */
-.stButton button {
-    background-color: #1a73e8;
-    color: white;
+.news-summary {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #F4F6F7;
     font-weight: bold;
-    border-radius: 5px;
-    padding: 10px 20px;
-    border: none;
-    transition: background-color 0.3s;
+    color: #333;
+    font-size: 18px;
 }
-
-.stButton button:hover {
-    background-color: #005bb5;
-}
-
-/* Styling the sidebar */
-.stSidebar {
-    background-color: #ffffff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Article links styling */
-.article-link {
-    font-size: 1.1em;
-    font-weight: bold;
-    color: #1a73e8;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-}
-
-.article-link:hover {
-    text-decoration: underline;
-}
-
-/* Custom container styling for news articles */
-.news-container {
-    margin: 20px;
+/* Tạo kiểu cho các bài báo */
+.article-container {
+    margin-top: 20px;
     padding: 15px;
-    border-left: 5px solid #1a73e8;
-    background-color: #ffffff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-}
+    background-color: #F4F6F7;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .article-title {
+
+    font-size: 22px;
+    margin-bottom: 10px;
+    color: #E74C3C; /* Màu đỏ cho tiêu đề */
+    text-decoration: none; /* Loại bỏ gạch chân mặc định của liên kết */
+  }
+  
+  .article-link {
+    color: inherit; /* Kế thừa màu sắc của tiêu đề */
+    text-decoration: none; /* Loại bỏ gạch chân của liên kết */
+  }
+  
+  .article-link:hover .article-title {
+    text-decoration: underline; /* Thêm gạch chân khi hover */
+  }
+  
 
 /* Animation for success messages */
 .stSuccess {
