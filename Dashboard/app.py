@@ -190,72 +190,72 @@ def buy_n_sell(df, stock_code, col='closing_price', period1=20, period2=50, peri
 
     st.plotly_chart(fig)
 
-def lstm_prediction_plotly(df, train_ratio=0.75, epochs=1):
-    window_size = 40
-    if df.shape[0] < window_size:
-        st.write("Not enough data to train the model. Need at least window_size data points.")
-        return
+# def lstm_prediction_plotly(df, train_ratio=0.75, epochs=1):
+#     window_size = 40
+#     if df.shape[0] < window_size:
+#         st.write("Not enough data to train the model. Need at least window_size data points.")
+#         return
 
-    # Đảm bảo cột 'trade_date' là datetime và đặt làm index
-    df['trade_date'] = pd.to_datetime(df['trade_date'])
-    df.set_index('trade_date', inplace=True)
+#     # Đảm bảo cột 'trade_date' là datetime và đặt làm index
+#     df['trade_date'] = pd.to_datetime(df['trade_date'])
+#     df.set_index('trade_date', inplace=True)
 
-    # Chuẩn bị dữ liệu
-    df_new = df[['closing_price']]
-    dataset = df_new.values
-    train_size = ceil(df.shape[0] * train_ratio)
-    train = df_new[:train_size]
-    valid = df_new[train_size:]
+#     # Chuẩn bị dữ liệu
+#     df_new = df[['closing_price']]
+#     dataset = df_new.values
+#     train_size = ceil(df.shape[0] * train_ratio)
+#     train = df_new[:train_size]
+#     valid = df_new[train_size:]
     
-    scaler = MinMaxScaler(feature_range=(0, 1))
-    scaled_data = scaler.fit_transform(dataset)
+#     scaler = MinMaxScaler(feature_range=(0, 1))
+#     scaled_data = scaler.fit_transform(dataset)
     
-    # Chuẩn bị dữ liệu train
-    x_train, y_train = [], []
-    for i in range(window_size, len(train)):
-        x_train.append(scaled_data[i-window_size:i, 0])
-        y_train.append(scaled_data[i, 0])
+#     # Chuẩn bị dữ liệu train
+#     x_train, y_train = [], []
+#     for i in range(window_size, len(train)):
+#         x_train.append(scaled_data[i-window_size:i, 0])
+#         y_train.append(scaled_data[i, 0])
     
-    x_train, y_train = np.array(x_train), np.array(y_train)
-    x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
+#     x_train, y_train = np.array(x_train), np.array(y_train)
+#     x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
     
-    # Xây dựng mô hình LSTM
-    model = Sequential([
-        LSTM(units=50, return_sequences=True, input_shape=(x_train.shape[1], 1)),
-        LSTM(units=50),
-        Dense(1)
-    ])
-    model.compile(loss='mean_squared_error', optimizer='adam')
+#     # Xây dựng mô hình LSTM
+#     model = Sequential([
+#         LSTM(units=50, return_sequences=True, input_shape=(x_train.shape[1], 1)),
+#         LSTM(units=50),
+#         Dense(1)
+#     ])
+#     model.compile(loss='mean_squared_error', optimizer='adam')
 
-    # Huấn luyện mô hình
-    model.fit(x_train, y_train, epochs=epochs, batch_size=1, verbose=2)
+#     # Huấn luyện mô hình
+#     model.fit(x_train, y_train, epochs=epochs, batch_size=1, verbose=2)
     
-    # Chuẩn bị dữ liệu validate
-    inputs = df_new[len(df_new) - len(valid) - window_size:].values
-    inputs = scaler.transform(inputs.reshape(-1, 1))
+#     # Chuẩn bị dữ liệu validate
+#     inputs = df_new[len(df_new) - len(valid) - window_size:].values
+#     inputs = scaler.transform(inputs.reshape(-1, 1))
     
-    x_validate = []
-    for i in range(window_size, inputs.shape[0]):
-        x_validate.append(inputs[i-window_size:i, 0])
-    x_validate = np.array(x_validate)
-    x_validate = np.reshape(x_validate, (x_validate.shape[0], x_validate.shape[1], 1))
+#     x_validate = []
+#     for i in range(window_size, inputs.shape[0]):
+#         x_validate.append(inputs[i-window_size:i, 0])
+#     x_validate = np.array(x_validate)
+#     x_validate = np.reshape(x_validate, (x_validate.shape[0], x_validate.shape[1], 1))
     
-    # Dự đoán giá
-    predicted_price = model.predict(x_validate)
-    predicted_price = scaler.inverse_transform(predicted_price)
-    valid['Predictions'] = predicted_price
+#     # Dự đoán giá
+#     predicted_price = model.predict(x_validate)
+#     predicted_price = scaler.inverse_transform(predicted_price)
+#     valid['Predictions'] = predicted_price
 
-    # Biểu đồ dự đoán LSTM
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=train.index, y=train['closing_price'], mode='lines', name='Train'))
-    fig.add_trace(go.Scatter(x=valid.index, y=valid['closing_price'], mode='lines', name='Valid'))
-    fig.add_trace(go.Scatter(x=valid.index, y=valid['Predictions'], mode='lines', name='Prediction'))
-    fig.update_layout(title="Dự đoán giá cổ phiếu bằng LSTM", xaxis_title="Thời gian", yaxis_title="Giá",
-                      xaxis=dict(type='date', tickformat='%b %Y'), height=600, autosize=True)
+#     # Biểu đồ dự đoán LSTM
+#     fig = go.Figure()
+#     fig.add_trace(go.Scatter(x=train.index, y=train['closing_price'], mode='lines', name='Train'))
+#     fig.add_trace(go.Scatter(x=valid.index, y=valid['closing_price'], mode='lines', name='Valid'))
+#     fig.add_trace(go.Scatter(x=valid.index, y=valid['Predictions'], mode='lines', name='Prediction'))
+#     fig.update_layout(title="Dự đoán giá cổ phiếu bằng LSTM", xaxis_title="Thời gian", yaxis_title="Giá",
+#                       xaxis=dict(type='date', tickformat='%b %Y'), height=600, autosize=True)
     
-    st.plotly_chart(fig)
+#     st.plotly_chart(fig)
 
-def lstm_future_prediction(df, train_ratio=0.75, epochs=1, future_months=1):
+def lstm_future_prediction(df, stock_code, epochs=1, future_months=1):
     # Kiểm tra cột 'trade_date' có tồn tại không
     if 'trade_date' not in df.columns:
         st.write("Column 'trade_date' not found in the DataFrame.")
@@ -273,16 +273,13 @@ def lstm_future_prediction(df, train_ratio=0.75, epochs=1, future_months=1):
     # Chuẩn bị dữ liệu
     df_new = df[['closing_price']]
     dataset = df_new.values
-    train_size = ceil(df.shape[0] * train_ratio)
-    train = df_new[:train_size]
-    valid = df_new[train_size:]
-    
+
     scaler = MinMaxScaler(feature_range=(0, 1))
     scaled_data = scaler.fit_transform(dataset)
     
     # Chuẩn bị dữ liệu train
     x_train, y_train = [], []
-    for i in range(window_size, len(train)):
+    for i in range(window_size, len(scaled_data)):
         x_train.append(scaled_data[i-window_size:i, 0])
         y_train.append(scaled_data[i, 0])
     
@@ -290,7 +287,7 @@ def lstm_future_prediction(df, train_ratio=0.75, epochs=1, future_months=1):
     x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
     
     # Xây dựng mô hình LSTM
-    model = Sequential([
+    model = Sequential([ 
         LSTM(units=50, return_sequences=True, input_shape=(x_train.shape[1], 1)),
         LSTM(units=50),
         Dense(1)
@@ -299,23 +296,8 @@ def lstm_future_prediction(df, train_ratio=0.75, epochs=1, future_months=1):
 
     # Huấn luyện mô hình
     model.fit(x_train, y_train, epochs=epochs, batch_size=1, verbose=2)
-    
-    # Chuẩn bị dữ liệu validate
-    inputs = df_new[len(df_new) - len(valid) - window_size:].values
-    inputs = scaler.transform(inputs.reshape(-1, 1))
-    
-    x_validate = []
-    for i in range(window_size, inputs.shape[0]):
-        x_validate.append(inputs[i-window_size:i, 0])
-    x_validate = np.array(x_validate)
-    x_validate = np.reshape(x_validate, (x_validate.shape[0], x_validate.shape[1], 1))
-    
-    # Dự đoán giá
-    predicted_price = model.predict(x_validate)
-    predicted_price = scaler.inverse_transform(predicted_price)
-    valid['Predictions'] = predicted_price
 
-    # Các dự đoán trong tương lai (tính theo tháng)
+    # Dự đoán giá trong tương lai
     future_days = future_months * 30
     last_window_data = scaled_data[-window_size:]
 
@@ -334,19 +316,25 @@ def lstm_future_prediction(df, train_ratio=0.75, epochs=1, future_months=1):
 
     # Biểu đồ dự đoán LSTM
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=train.index, y=train['closing_price'], mode='lines', name='Train'))
-    fig.add_trace(go.Scatter(x=valid.index, y=valid['closing_price'], mode='lines', name='Valid'))
-    fig.add_trace(go.Scatter(x=valid.index, y=valid['Predictions'], mode='lines', name='Prediction'))
+    fig.add_trace(go.Scatter(x=df_new.index, y=df_new['closing_price'], mode='lines', name='Historical Data'))
     fig.add_trace(go.Scatter(x=future_dates, y=future_predictions.flatten(), mode='lines', name='Future Predictions'))
-    fig.update_layout(title="Dự đoán giá cổ phiếu bằng LSTM", xaxis_title="Thời gian", yaxis_title="Giá",
-                      xaxis=dict(type='date', tickformat='%b %Y'), height=600, autosize=True)
+    fig.update_layout(
+        title=f"Dự đoán giá cổ phiếu {stock_code} bằng LSTM",  # Thêm mã cổ phiếu vào tiêu đề
+        xaxis_title="Thời gian", 
+        yaxis_title="Giá",
+        xaxis=dict(type='date', tickformat='%b %Y'), 
+        height=600, 
+        autosize=True
+    )
     
     st.plotly_chart(fig)
 
 
 
+
+
 # Streamlit UI
-st.title('Dashboard phân tích cổ phiếu')
+st.title('Dashboard phân tích chi tiết cổ phiếu')
 
 
 # Sidebar
@@ -503,14 +491,14 @@ MA_type = st.sidebar.selectbox('MA Type', ['SMA', 'EMA', 'WMA', 'VWMA'])
 
 buy_n_sell(filtered_data, stock_code=stock_code, col='closing_price', period1=period1, period2=period2, period3=period3, MA_type=MA_type)
 
-# Hiển thị dự đoán LSTM
-stock_data = data[data['stock_code'] == stock_code].sort_values(by='trade_date').reset_index(drop=True)
-lstm_prediction_plotly(stock_data, train_ratio=0.75, epochs=10)
+# # Hiển thị dự đoán LSTM
+# stock_data = data[data['stock_code'] == stock_code].sort_values(by='trade_date').reset_index(drop=True)
+# lstm_prediction_plotly(stock_data, train_ratio=0.75, epochs=10)
 
 # Dự đoán giá trong tương lai
 stock_data = data[data['stock_code'] == stock_code]
 future_months = st.sidebar.selectbox('Future Prediction (months)', [1, 2, 3])
-lstm_future_prediction(stock_data, train_ratio=0.75, epochs=10, future_months=future_months)
+lstm_future_prediction(stock_data, stock_code, epochs=10, future_months=future_months)
 
 def remove_json_formatting(input_text):
     # Loại bỏ dấu ```json và ``` nếu chúng có trong input_text
