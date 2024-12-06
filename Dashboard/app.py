@@ -1,98 +1,91 @@
-import streamlit as st
-import plotly.express as px
 import pandas as pd
+import plotly.express as px
+import streamlit as st
 
-# Sample data
-df = pd.DataFrame({
-    'industry_name': ['Tech', 'Finance', 'Health'],
-    'code': ['AAPL', 'GOOGL', 'AMZN'],
-    'value': [100, 200, 150],
-    'price_change_percentage': [1.5, -2.0, 0.8],
-    'color': [1, -1, 0]
+# Dữ liệu ví dụ cho finance_metric_features_mapping và finance_metric_explanations
+finance_metric_features_mapping = {
+    'metric1': 'Chỉ số tài chính 1',
+    'metric2': 'Chỉ số tài chính 2',
+    'metric3': 'Chỉ số tài chính 3'
+}
+
+finance_metric_explanations = {
+    'Chỉ số tài chính 1': {'description': 'Mô tả về chỉ số tài chính 1', 'insights': 'Các nhận xét về chỉ số tài chính 1'},
+    'Chỉ số tài chính 2': {'description': 'Mô tả về chỉ số tài chính 2', 'insights': 'Các nhận xét về chỉ số tài chính 2'},
+    'Chỉ số tài chính 3': {'description': 'Mô tả về chỉ số tài chính 3', 'insights': 'Các nhận xét về chỉ số tài chính 3'}
+}
+
+# Dữ liệu ví dụ cho filtered_lastest_finance_data và latest_stock_data
+filtered_lastest_finance_data = pd.DataFrame({
+    'stock_code': ['A', 'B', 'C', 'D', 'E'],
+    'metric1': [10, 20, 30, 40, 50],
+    'metric2': [50, 40, 30, 20, 10],
+    'metric3': [5, 15, 25, 35, 45],
 })
 
-criteria_mapping = {'value': 'Giá trị giao dịch'}
+latest_stock_data = pd.DataFrame({
+    'stock_code': ['A', 'B', 'C', 'D', 'E'],
+    'total_trading_volume': [1000, 2000, 1500, 1800, 2200],
+    'closing_price': [100, 200, 150, 180, 220],
+    'price_change_percentage': [1.5, -2.3, 0.5, -1.0, 3.1],
+})
 
-# Create the Plotly treemap
-fig = px.treemap(
-    data_frame=df,
-    path=['industry_name', 'code'],
-    values='value',
-    hover_data=['price_change_percentage'],
-    color='color',
-    color_discrete_map={'-1': '#FF2929', '0': '#F6E96B', '1': '#399918'}
-)
+def process_and_display_for_metric(metric_name):
+    """Hàm xử lý và hiển thị biểu đồ và bảng cho từng chỉ số tài chính"""
+    
+    # Lọc cột tương ứng với chỉ số tài chính đã chọn
+    criteria_column = [
+        key for key, value in finance_metric_features_mapping.items() if value == metric_name
+    ][0]
+    
+    # Kiểm tra dữ liệu có cột không và lọc top 10 cổ phiếu
+    if criteria_column in filtered_lastest_finance_data.columns:
+        top_10_stocks = filtered_lastest_finance_data.sort_values(by=criteria_column, ascending=False).head(10)
 
-# Remove title spacing by setting margin.t = 0
-fig.update_layout(
-    margin=dict(t=0, l=20, r=20, b=20),
-    font=dict(size=10, weight="bold")
-)
+        # Kết hợp với dữ liệu cổ phiếu mới nhất
+        merged_top_10_stocks = pd.merge(
+            top_10_stocks,
+            latest_stock_data[['stock_code', 'total_trading_volume', 'closing_price', 'price_change_percentage']],
+            on='stock_code',
+            how='left'
+        )
 
-# Tooltip title with description
-tooltip_title = f"""
-    <div class="tooltip-title">
-        <h3 style="display: inline-block; font-family: Arial, sans-serif; font-size: 24px; color: black; margin: 0;">
-            Tổng quan thị trường dựa trên tiêu chí 
-            <span style="color: #FF6347;">{criteria_mapping['value']}</span>
-        </h3>
-        <span class="tooltiptext">
-            Biểu đồ này thể hiện tổng quan thị trường dựa trên tiêu chí 
-            <span style='color: #FF6347;'><b>{criteria_mapping['value']}</b></span>. 
-            <ul>
-                <li>Mỗi ô đại diện cho một cổ phiếu.</li>
-                <li>Kích thước ô biểu thị giá trị giao dịch.</li>
-                <li>Màu sắc cho biết mức tăng/giảm giá so với ngày trước đó.</li>
-            </ul>
-        </span>
-    </div>
-"""
+        # Hiển thị thông tin mô tả và insights cho chỉ số tài chính
+        st.expander(f"{metric_name}").markdown(f"**Mô tả:** {finance_metric_explanations[metric_name]['description']}")
+        st.expander(f"{metric_name}").markdown(f"**Insights:** {finance_metric_explanations[metric_name]['insights']}")
 
-# Render tooltip title and set position
-st.markdown(
-    f"""
-    <style>
-        .tooltip-title {{
+        # Hiển thị biểu đồ cột (bar chart)
+        fig = px.bar(
+            merged_top_10_stocks,
+            x='stock_code', 
+            y=criteria_column, 
+            labels={criteria_column: metric_name, 'stock_code': 'Mã Cổ Phiếu'},
+            title=f"Top 10 Cổ Phiếu Theo {metric_name}",
+            color=criteria_column,  # Thêm màu sắc cho cột
+            color_continuous_scale='Viridis'  # Chọn màu sắc cho biểu đồ
+        )
+        st.plotly_chart(fig)
 
-            top: 30px; /* Đặt vị trí so với đỉnh container */
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            cursor: pointer;
-            text-align: center;
-        }}
+        # Hiển thị bảng dữ liệu
+        st.dataframe(
+            merged_top_10_stocks[['stock_code', 'total_trading_volume', 'closing_price', 'price_change_percentage', criteria_column]].rename(columns={
+                "stock_code": "Mã CK",
+                "total_trading_volume": "Khối lượng giao dịch",
+                "closing_price": "Giá",
+                "price_change_percentage": "Thay đổi",
+                criteria_column: metric_name,
+            })
+        )
+    else:
+        st.warning(f"Dữ liệu không có tiêu chí: {metric_name}")
 
-        .tooltip-title .tooltiptext {{
-            visibility: hidden;
-            width: 350px;
-            background-color: #f9f9f9;
-            color: #333;
-            text-align: left;
-            border-radius: 5px;
-            padding: 10px;
-            position: absolute;
-            z-index: 1;
-            top: 120%; 
-            left: 50%;
-            transform: translateX(-50%);
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            font-size: 14px;
-            font-family: Arial, sans-serif;
-        }}
 
-        .tooltip-title:hover .tooltiptext {{
-            visibility: visible;
-        }}
+# Tạo tabs từ finance_metric_features_mapping
+tab_names = list(finance_metric_features_mapping.values())
+tabs = st.tabs(tab_names)
 
-        .stPlotlyChart {{
-            position: relative;
-        }}
-    </style>
-
-    {tooltip_title}
-    """,
-    unsafe_allow_html=True,
-)
-
-# Display the Plotly chart
-st.plotly_chart(fig, use_container_width=True)
+# Xử lý thủ công mỗi tab được chọn
+for i, tab_name in enumerate(tab_names):
+    with tabs[i]:
+        # Xử lý và hiển thị cho chỉ số tài chính đã chọn
+        process_and_display_for_metric(tab_name)

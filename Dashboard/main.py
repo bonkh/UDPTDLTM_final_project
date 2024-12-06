@@ -5,8 +5,6 @@ import matplotlib.pyplot as plt
 from data_loader import load_all_tables
 
 from overview_utils import load_css
-from data_loader import load_all_tables
-
 def setup_page():
  
     st.set_page_config(

@@ -1,4 +1,3 @@
-# data_loader.py
 import pandas as pd
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from sqlalchemy import create_engine
@@ -46,6 +45,7 @@ columns_map = {
     "stock_data": stock_data_necessary_columns,
     "stock_index": stock_index_necessary_columns,
 }
+
 @st.cache_data
 def load_all_tables(columns_map=columns_map):
     """
@@ -58,7 +58,7 @@ def load_all_tables(columns_map=columns_map):
 
     with ThreadPoolExecutor() as executor:
         future_to_table = {
-            executor.submit(load_data, table, columns_map.get(table,None) if columns_map else None): table 
+            executor.submit(load_data, table, columns_map.get(table, None) if columns_map else None): table 
             for table in tables
         }
         for future in as_completed(future_to_table):
@@ -73,15 +73,26 @@ def load_all_tables(columns_map=columns_map):
 
 @st.cache_data
 def load_data(table_name, columns=None):
-  
+    """
+    Loads data from a specified table in the database.
+    :param table_name: Name of the table to query.
+    :param columns: List of columns to select (optional).
+    :return: A Pandas DataFrame containing the data from the table.
+    """
     engine = create_engine(conn_str)
     # Build SQL query
     columns_query = ", ".join(columns) if columns else "*"
     query = f"SELECT {columns_query} FROM {table_name}"
-    
-    return pd.read_sql(query, engine)
+
+    # Open a connection and execute the query
+    with engine.connect() as connection:
+        return pd.read_sql(query, connection)
 
 @st.cache_data
 def load_stock_data(columns=None):
-
+    """
+    Loads stock data from the 'stock_data' table.
+    :param columns: List of columns to select (optional).
+    :return: A Pandas DataFrame containing the stock data.
+    """
     return load_data("stock_data", columns if columns else stock_data_necessary_columns)

@@ -1,15 +1,19 @@
 import pandas as pd
 from sqlalchemy import create_engine
+from sqlalchemy import text
+
+from sqlalchemy.engine import Result
 
 # Database connection string (provided)
-conn_str = 'postgresql+psycopg2://caokhoi:m6ikFt3TKwnkV75fNZ2FBdKiEHKEu1sN@dpg-cs87v7m8ii6s73c5m19g-a.singapore-postgres.render.com:5432/stock_data_01'
+conn_str = 'postgresql://stock_data_i36c_user:YLMLHhfjF7oIdi3SMzexVaobFuaL37Dc@dpg-csro9ppu0jms73e1epb0-a.singapore-postgres.render.com/stock_data_i36c'
 engine = create_engine(conn_str)
 
 # Connect to the database and retrieve all table names
 with engine.connect() as connection:
     # Retrieve all table names
-    tables_query = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
+    tables_query = text("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'")
     result = connection.execute(tables_query)
+    result = Result.mappings(result)
     table_names = [row['table_name'] for row in result]
 
 # Fetch data from each table and save to CSV

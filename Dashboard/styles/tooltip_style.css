@@ -14,8 +14,8 @@
   visibility: hidden;
   width: 500px; 
   max-width: 500px; 
-  background-color: black;
-  color: #fff;
+  background-color: #F9E8D9;
+  color: #104a42;
   text-align: left;
   padding: 10px; 
   border-radius: 6px; 
@@ -54,7 +54,7 @@
   display: block;
   width: 100%;
   padding: 20px;
-  background-color: #4CAF50;
+  background-color: #212224;
   color: white;
   text-decoration: none;
   border-radius: 5px;

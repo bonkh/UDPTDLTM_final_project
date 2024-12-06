@@ -54,14 +54,15 @@ def display_index_overview(index_data, index_name, header_text, exchange_name):
 
     # Tooltip content
     tooltip_text = (
-        f"This is the {index_name}, represents for all stock in the {exchange_name} exchange . The current price is {closing_price}, "
-        f"with a change of {price_change} points, which is a "
-        f"{latest_data['price_change_percentage']:.2f}% change."
+        f"Đây là chỉ số <span style='color:#FF6347;'>{index_name}</span>, đại diện cho toàn bộ các cổ phiếu trên sàn giao dịch <span style='color:green;'>{exchange_name}</span>. "
+        f"Giá hiện tại là <span style='color:#FF6347;'>{closing_price}</span>, với mức thay đổi <span style='color:#FF6347;'>{price_change}</span> điểm, tương đương "
+        f"mức thay đổi <span style='color:#FF6347;'>{latest_data['price_change_percentage']:.2f}%</span>."
     )
+
 
     st.markdown(
         f"""
-        <div class="tooltip tooltip-right" style="display: flex; align-items: center; justify-content: space-between; white-space: nowrap;">
+        <div class="tooltip tooltip-right" style="display: flex; align-items: center; justify-content: space-between; white-space: nowrap; font-weight: bold">
             <!-- Header text căn trái -->
             <div style="font-size: 15px; font-weight: bold; text-align: left; margin-right: 10px;">
                 {header_text}:
@@ -130,7 +131,7 @@ def display_stock_overview(selected_row, hovered_label, latest_date):
     st.markdown(
         f"""
         <div class="tooltip" style="display: flex; align-items: center; justify-content: space-between; white-space: nowrap;">
-            <!-- Mã cổ phiếu -->
+        
             <div style="font-size: 15px; font-weight: bold; text-align: left; margin-right: 10px;">
                 {hovered_label}:
             </div>
@@ -188,7 +189,7 @@ finance_metric_features_mapping = {
     "percent_foreign_ownership" : "Tỉ lệ sở hữu nước ngoài",
     "cash_dividend": "Giá trị cổ tức",
     "dividend_yield" : "Tỷ suất cổ tức",
-    "beta" : "Chỉ số Beta",
+    "beta" : "Beta",
     "eps" : "EPS",
     "pe" : "PE",
     "forward_pe" : "Forward PE",
@@ -231,83 +232,220 @@ tooltip_dict = {
                                 Các tiêu chí này có thể bao gồm vốn hóa thị trường, giao dịch hàng ngày, hoặc bất kỳ tiêu chí nào phù hợp với nhu cầu phần tích của bạn.
                                 Ở đây, tiêu chí mặc định sẽ là tổng khối lượng giao dịch trong ngày.""",
 
-    "stock_index_change" : """Đây là biểu đồ đường thể hiện sự biến động của các chỉ số index, đại diện cho các sàn chứng khoán theo từng khoảng thời gian.
-                            Cho phép chúng ta theo dõi, cũng như quan sát được các biến đọng về giá, từ đó có được cái nhìn tổng quan về thị trường hiện tại.
-                            """
+    "stock_index_change" : """Đây là biểu đồ đường thể hiện sự biến động của các chỉ số index, đại diện cho các sàn chứng khoán theo từng khoảng thời gian. Cho phép chúng ta theo dõi, cũng như quan sát được các biến đọng về giá, từ đó có được cái nhìn tổng quan về thị trường hiện tại."""
 }
 
+
+
 import pandas as pd
+import numpy as np
 
 def calculate_percentage_changes(df):
-    """
-    Calculate percentage changes for different time periods (%D, %W, %M, %Q, %YTD, %Y)
-    for each stock index in the provided dataframe.
-
-    Parameters:
-    df (pd.DataFrame): DataFrame containing 'trading_date', 'stock_code', and 'closing_price'.
-
-    Returns:
-    pd.DataFrame: A DataFrame with percentage changes for each stock code.
-    """
     # Convert 'trading_date' to datetime
     df['trading_date'] = pd.to_datetime(df['trading_date'])
-
-    # Extract date-related features (year, month, quarter, week) from 'trading_date'
+    
+    # Extract additional time-based columns
     df['year'] = df['trading_date'].dt.year
+    df['year_month'] = df['trading_date'].dt.to_period('M')
     df['month'] = df['trading_date'].dt.month
     df['quarter'] = df['trading_date'].dt.quarter
     df['week'] = df['trading_date'].dt.isocalendar().week
 
-    # List to store results for each stock code
-    result = []
+    # Result list to store output for each stock index
+    results = []
+    
 
-    # Loop over each unique stock code
+
     for stock_code in df['stock_code'].unique():
-        # Filter data for each stock code
-        stock_data = df[df['stock_code'] == stock_code]
-
+        # Filter data for the current stock index
+        stock_data = df[df['stock_code'] == stock_code].sort_values(by='trading_date').reset_index(drop=True)
+        date_to_price = stock_data.set_index('trading_date')['closing_price'].to_dict()
         # %D (Change compared to the previous day)
         stock_data['previous_close'] = stock_data['closing_price'].shift(1)
-        stock_data['percent_change_day'] = ((stock_data['closing_price'] - stock_data['previous_close']) / stock_data['previous_close']) * 100
+        stock_data['percent_change_day'] = ((stock_data['closing_price'] - stock_data['previous_close']) /
+                                            stock_data['previous_close']) * 100
 
-        # %W (Change compared to the previous week)
-        stock_data['previous_week_close'] = stock_data.groupby('week')['closing_price'].shift(1)
+        stock_data['previous_week_date'] = stock_data['trading_date'] - pd.Timedelta(weeks=1)
+        stock_data['previous_week_close'] = stock_data['previous_week_date'].map(date_to_price)
         stock_data['percent_change_week'] = ((stock_data['closing_price'] - stock_data['previous_week_close']) / stock_data['previous_week_close']) * 100
 
-        # %M (Change compared to the previous month)
-        stock_data['previous_month_close'] = stock_data.groupby('month')['closing_price'].shift(1)
-        stock_data['percent_change_month'] = ((stock_data['closing_price'] - stock_data['previous_month_close']) / stock_data['previous_month_close']) * 100
+        # %M
+        last_day_prices = (
+            stock_data.groupby('year_month')['trading_date']
+            .max()
+            .reset_index()
+            .merge(
+                stock_data[['trading_date', 'closing_price']], 
+                on='trading_date', 
+                how='left'
+            )
+        )
+
+        # Chuyển đổi thành dictionary để nhanh chóng truy xuất
+        month_to_price = dict(zip(last_day_prices['year_month'], last_day_prices['closing_price']))
+
+        # Tìm giá cuối tháng trước cho mỗi ngày
+        stock_data['previous_month'] = stock_data['year_month'] - 1  # Lùi về tháng trước
+        stock_data['last_month_close'] = stock_data['previous_month'].map(month_to_price)
+
+        # Tính phần trăm thay đổi so với tháng trước
+        stock_data['percent_change_month'] = (
+            (stock_data['closing_price'] - stock_data['last_month_close']) / stock_data['last_month_close']
+        ) * 100
+
+
 
         # %Q (Change compared to the previous quarter)
-        stock_data['previous_quarter_close'] = stock_data.groupby('quarter')['closing_price'].shift(1)
-        stock_data['percent_change_quarter'] = ((stock_data['closing_price'] - stock_data['previous_quarter_close']) / stock_data['previous_quarter_close']) * 100
+        last_quarter_prices = (
+            stock_data.groupby(['year', 'quarter'])['trading_date']
+            .max()
+            .reset_index()
+            .merge(
+                stock_data[['trading_date', 'closing_price']],
+                on='trading_date',
+                how='left'
+            )
+        )
+
+        
+
+        # Tạo cột định danh quý dạng chuỗi
+        last_quarter_prices['year_quarter'] = last_quarter_prices['year'].astype(str) + '-Q' + last_quarter_prices['quarter'].astype(str)
+        quarter_to_price = dict(zip(last_quarter_prices['year_quarter'], last_quarter_prices['closing_price']))
+        # Tạo cột quý trước
+        stock_data['year_quarter'] = stock_data['year'].astype(str) + '-Q' + stock_data['quarter'].astype(str)
+
+# Tính toán quý trước
+        def get_previous_quarter(row):
+            if row['quarter'] == 1:  # Nếu là Q1 thì quý trước là Q4 của năm trước
+                return f"{row['year'] - 1}-Q4"
+            else:  # Ngược lại, giảm số quý đi 1
+                return f"{row['year']}-Q{row['quarter'] - 1}"
+
+        # Áp dụng hàm tính toán
+        stock_data['previous_year_quarter'] = stock_data.apply(get_previous_quarter, axis=1)
+
+        
+        # Ánh xạ giá quý trước
+        stock_data['previous_quarter_close'] = stock_data['previous_year_quarter'].map(quarter_to_price)
+        # Tính %Q (thay đổi so với quý trước)
+        stock_data['percent_change_quarter'] = (
+            (stock_data['closing_price'] - stock_data['previous_quarter_close']) / stock_data['previous_quarter_close']
+        ) * 100
 
         # %YTD (Change compared to the beginning of the year)
-        first_day_of_year = stock_data[stock_data['trading_date'].dt.month == 1].iloc[0]
-        stock_data['percent_change_ytd'] = ((stock_data['closing_price'] - first_day_of_year['closing_price']) / first_day_of_year['closing_price']) * 100
+        first_day_of_year = (
+            stock_data.sort_values('trading_date')
+            .groupby('year', as_index=False)
+            .first()[['year', 'closing_price']]
+            .rename(columns={'closing_price': 'first_year_close'})
+        )
+
+        # Merge dữ liệu giá đầu năm vào stock_data
+        stock_data = stock_data.merge(first_day_of_year, on='year', how='left')
+
+        # Tính toán %YTD
+        stock_data['percent_change_ytd'] = ((stock_data['closing_price'] - stock_data['first_year_close']) /
+                                            stock_data['first_year_close']) * 100
+
 
         # %Y (Change compared to the same day last year)
-        last_year_same_day = stock_data[stock_data['trading_date'].dt.year == (stock_data['year'].max() - 1)].iloc[0]
-        stock_data['percent_change_year'] = ((stock_data['closing_price'] - last_year_same_day['closing_price']) / last_year_same_day['closing_price']) * 100
+        # Tính ngày cùng kỳ năm trước
+        stock_data['last_year_date'] = stock_data['trading_date'] - pd.DateOffset(years=1)
 
-        # Append the results for the current stock code
-        result.append({
+        # Tạo bảng phụ để ánh xạ trading_date -> closing_price
+        date_to_price_df = stock_data[['trading_date', 'closing_price']].rename(
+            columns={'trading_date': 'last_year_date', 'closing_price': 'last_year_close'}
+        )
+
+        # Merge giá của cùng kỳ năm trước vào dữ liệu chính
+        stock_data = stock_data.merge(date_to_price_df, on='last_year_date', how='left')
+
+        # Tính %Y (Change compared to the same day last year)
+        stock_data['percent_change_year'] = (
+            (stock_data['closing_price'] - stock_data['last_year_close']) /
+            stock_data['last_year_close']
+        ) * 100
+
+        # Append the latest values for the stock index to results
+        latest_row = stock_data.iloc[-1]
+        results.append({
             'stock_code': stock_code,
-            'Giá': stock_data['closing_price'].iloc[-1],
-            '%D': stock_data['percent_change_day'].iloc[-1],
-            '%W': stock_data['percent_change_week'].iloc[-1],
-            '%M': stock_data['percent_change_month'].iloc[-1],
-            '%Q': stock_data['percent_change_quarter'].iloc[-1],
-            '%YTD': stock_data['percent_change_ytd'].iloc[-1],
-            '%Y': stock_data['percent_change_year'].iloc[-1]
+            'Giá': f"{round(latest_row['closing_price'], 2):,.2f}",
+            '%D': f"{round(latest_row['percent_change_day'], 2):,.2f}%" if not np.isnan(latest_row['percent_change_day']) else None,
+            '%W': f"{round(latest_row['percent_change_week'], 2):,.2f}%" if not np.isnan(latest_row['percent_change_week']) else None,
+            '%M': f"{round(latest_row['percent_change_month'], 2):,.2f}%" if not np.isnan(latest_row['percent_change_month']) else None,
+            '%Q': f"{round(latest_row['percent_change_quarter'], 2):,.2f}%" if not np.isnan(latest_row['percent_change_quarter']) else None,
+            '%YTD': f"{round(latest_row['percent_change_ytd'], 2):,.2f}%" if not np.isnan(latest_row['percent_change_ytd']) else None,
+            '%Y': f"{round(latest_row['percent_change_year'], 2):,.2f}%" if not np.isnan(latest_row['percent_change_year']) else None,
         })
 
-    # Convert the result list to a DataFrame
-    result_df = pd.DataFrame(result)
+    # Convert results to DataFrame
+    result_df = pd.DataFrame(results)
 
     return result_df
 
-# Example usage:
-# Assuming 'latest_index_data' is your original dataframe
-# result_df = calculate_percentage_changes(latest_index_data)
-# print(result_df)
+stock_index_column_tooltips = {
+    "stock_code": "Mã Index, đại diện cho chỉ số của các sàn chứng khoán",
+    "Giá": "Giá đóng cửa gần nhất của cổ phiếu. Xem giá hiện tại để đánh giá sự hấp dẫn hoặc so sánh lịch sử.",
+    "%D": "Phần trăm thay đổi giá trong ngày. Giúp đánh giá biến động ngắn hạn và cơ hội giao dịch hàng ngày.",
+    "%W": "Phần trăm thay đổi giá trong tuần. Xem xu hướng ngắn hạn trong tuần qua.",
+    "%M": "Phần trăm thay đổi giá trong tháng. Phân tích xu hướng dài hơn và sự tăng trưởng bền vững.",
+    "%Q": "Phần trăm thay đổi giá trong quý. Quan trọng với báo cáo tài chính hàng quý.",
+    "%YTD": "Phần trăm thay đổi giá từ đầu năm. Đánh giá hiệu suất tổng thể trong năm.",
+    "%Y": "Phần trăm thay đổi giá so với cùng ngày năm trước. Giúp hiểu xu hướng theo chu kỳ năm."
+}
+
+# Mapping các chỉ số với giải thích và insights
+finance_metric_explanations = {
+    "Nước ngoài mua": {
+        "name": "Nước ngoài mua",
+        "description": "Số lượng cổ phiếu được nhà đầu tư nước ngoài mua vào trong một khoảng thời gian nhất định.",
+        "insights": "Cổ phiếu được mua nhiều bởi nhà đầu tư nước ngoài thường có tiềm năng tăng trưởng hoặc mức độ tin cậy cao."
+    },
+    "Tỉ lệ sở hữu nước ngoài": {
+        "name": "Tỉ lệ sở hữu nước ngoài",
+        "description": "Tỷ lệ phần trăm cổ phiếu của công ty được sở hữu bởi các nhà đầu tư nước ngoài.",
+        "insights": "Tỷ lệ cao thể hiện sức hút của công ty đối với nhà đầu tư nước ngoài và có thể là dấu hiệu của một công ty uy tín."
+    },
+    "Giá trị cổ tức": {
+        "name": "Giá trị cổ tức",
+        "description": "Số tiền cổ tức trả trên mỗi cổ phiếu trong một kỳ tài chính.",
+        "insights": "Giá trị cao cho thấy công ty có lợi nhuận ổn định và khả năng chi trả cổ tức tốt."
+    },
+    "Tỷ suất cổ tức": {
+        "name": "Tỷ suất cổ tức",
+        "description": "Tỷ lệ giữa cổ tức tiền mặt và giá cổ phiếu hiện tại, thường được thể hiện dưới dạng phần trăm.",
+        "insights": "Tỷ suất cao có thể là lựa chọn tốt cho nhà đầu tư tìm kiếm thu nhập thụ động, nhưng cần xem xét sự bền vững của cổ tức."
+    },
+    "Beta": {
+        "name": "Chỉ số Beta",
+        "description": "Đo lường độ biến động của cổ phiếu so với thị trường chung.",
+        "insights": "Beta > 1: Cổ phiếu biến động mạnh hơn thị trường. Beta < 1: Cổ phiếu biến động nhẹ hơn thị trường."
+    },
+    "EPS": {
+        "name": "EPS",
+        "description": "Thu nhập trên mỗi cổ phiếu, được tính bằng lợi nhuận sau thuế chia cho số cổ phiếu đang lưu hành.",
+        "insights": "EPS cao thường biểu thị công ty đang hoạt động hiệu quả và tạo ra lợi nhuận tốt cho cổ đông."
+    },
+    "PE": {
+        "name": "PE",
+        "description": "Tỷ lệ giá trên thu nhập, cho biết nhà đầu tư sẵn sàng trả bao nhiêu cho mỗi đồng lợi nhuận của công ty.",
+        "insights": "PE cao: Công ty có tiềm năng tăng trưởng. PE thấp: Công ty đang bị định giá thấp hoặc có rủi ro."
+    },
+    "Forward PE": {
+        "name": "Forward PE",
+        "description": "Tỷ lệ giá trên thu nhập dự phóng, dùng để đánh giá giá trị cổ phiếu dựa trên EPS dự kiến trong tương lai.",
+        "insights": "Forward PE cung cấp góc nhìn về tăng trưởng tương lai và kỳ vọng của thị trường."
+    },
+    "BVPS": {
+        "name": "BVPS",
+        "description": "Giá trị sổ sách trên mỗi cổ phiếu, thể hiện giá trị tài sản thuần của công ty chia cho số cổ phiếu đang lưu hành.",
+        "insights": "BVPS cao thể hiện giá trị tài sản của công ty lớn, giúp đánh giá độ an toàn của đầu tư."
+    },
+    "P/B": {
+        "name": "P/B",
+        "description": "Tỷ lệ giá trên giá trị sổ sách, phản ánh mối quan hệ giữa giá cổ phiếu và giá trị tài sản sổ sách.",
+        "insights": "P/B thấp: Cổ phiếu bị định giá thấp. P/B cao: Công ty có tiềm năng tăng trưởng nhưng rủi ro định giá cao."
+    }
+}

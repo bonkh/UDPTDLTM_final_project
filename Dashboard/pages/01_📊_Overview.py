@@ -6,13 +6,13 @@ import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_plotly_events import plotly_events
-from overview_utils import display_index_overview, criteria_english, criteria_mapping, display_stock_overview, column_explanations, load_css, remove_html_tags, tooltip_dict, finance_metric_features_mapping, calculate_percentage_changes
+from overview_utils import display_index_overview, criteria_english, criteria_mapping, display_stock_overview, column_explanations, load_css, remove_html_tags, tooltip_dict, finance_metric_features_mapping, calculate_percentage_changes, stock_index_column_tooltips, finance_metric_explanations
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 from data_loader import load_all_tables
 from datetime import datetime, date, timedelta
 from dotenv import load_dotenv
 load_dotenv()
-
+background_color = "#F5F5F5"
 conn_str = os.getenv('DATABASE_RENDER')
 
 def setup_page():
@@ -45,7 +45,6 @@ st.markdown(
             </span>
         </div>
     """, unsafe_allow_html=True)
-
 
 stock_data['trade_date'] = pd.to_datetime(stock_data['trade_date'], errors='coerce')
 stock_data = stock_data.sort_values(by='trade_date').reset_index(drop=True)
@@ -86,7 +85,7 @@ with chart_col:
             f"""
                 <div class="tooltip" style="font-weight: bold">
                 Chọn sàn chứng khoán
-                    <span class="tooltiptext">
+                    <span class="tooltiptext ">
                         Sàn chứng khoán là nơi mà các chứng khoán như cổ phiếu, trái phiếu được giao dịch. Hiện nay, ở Việt Nam đang có ba sàn chứng khoán chính sau:
                                     <ul>
                                         <li>HOSE: Sở Giao dịch Chứng khoán TP.HCM</li>
@@ -176,7 +175,7 @@ with chart_col:
 
     st.markdown(
         f"""
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-top: 20px;">
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-top: 20px; font-weight:bold">
                 <div class="tooltip">
                     <h3 style=" color: #333;">Biểu đồ cơ cấu thị trường</h3>
                     <span class="tooltiptext">
@@ -205,21 +204,15 @@ with chart_col:
     )
 
     market_overview_fig.update_layout(
-        # title=f"<b>Tổng quan thị trường dựa trên tiêu chí <span style='font-family: Arial, sans-serif; color: #FF6347;'>{criteria_mapping[zone_size_feature]}</span></b>", 
-        # title_font=dict(family="Arial", size=20, weight="bold", color="black"),
         margin=dict(t=0, l=20, r=20, b=20),
         font=dict(size=10, weight="bold"),
 
-        plot_bgcolor='white',
-        paper_bgcolor='lightgrey',
+        # plot_bgcolor=background_color,
+        paper_bgcolor=background_color,
 
     )
     updated_labels = ['<b>' + label + '</b>' for label in market_overview_fig.data[0].labels]
-    # updated_labels = [
-    # f'<b><span style="{"font-family= Roboto, sans-serif"}">{label}</span></b>' 
-    # for label in market_overview_fig.data[0].labels]
 
-    # Update the figure with the modified labels
     market_overview_fig.data[0].labels = updated_labels
 
     criterion_name = criteria_mapping[zone_size_feature][0]
@@ -235,8 +228,6 @@ with chart_col:
             font_size=20,  
             font_color="black"
         ),
-
-     
     )
 
 
@@ -296,7 +287,7 @@ with chart_col:
 
                             columns_to_select = [
                                 "market_capitalization", "reference_price", "ceiling_price", "floor_price",
-                                "opening_price", "closing_price", "highest_price", "lowest_price",
+                                "opening_price", "closing_price",
                                 "total_trading_volume", "total_trading_value"
                             ]
 
@@ -309,14 +300,14 @@ with chart_col:
                                     value = f"{value:.2f}"
 
                                 tooltip_text = (
-                                    f"Đây là cột {criteria_mapping[column]}, {column_explanations[column]}"
+                                    f"Đây là cột {criteria_mapping[column][0]}, {column_explanations[column]}"
                                     f"Giá trị hiện tại trong ngày {latest_date} là {value}."
                                 )
                                 st.markdown(
                                     f"""
-                                    <div class="tooltip tooltip-right "  style="display: flex; align-items: center; justify-content: space-between; white-space: nowrap;">
+                                    <div class="tooltip tooltip-right"  style="display: flex; align-items: center; justify-content: space-between; white-space: nowrap;font-weight: bold;">
                                         <div style="font-size: 15px; font-weight: bold; text-align: left; margin-right: 10px;">
-                                            {criteria_mapping[column]}:
+                                            {criteria_mapping[column][0]}:
                                         </div>
                                         <div style="font-size: 15px; text-align: right;">
                                             {value}
@@ -328,42 +319,57 @@ with chart_col:
                                     """,
                                     unsafe_allow_html=True,
                                     )
+                                
+                            st.markdown("KLGD: triệu CP - Vốn hóa, GTGD: tỷ đồng")
                         else:
                             st.write(f"Industry: {hovered_label}")
 
 
 st.markdown(
     f"""
-        <div class="tooltip tooltip-right">
+        <div class="tooltip tooltip-right" style="font-weight: bold">
             <h3>Biến động của các chỉ số Index </h3>
             <span class="tooltiptext">
                 {tooltip_dict['stock_index_change']}
             </span>
         </div>
     """, unsafe_allow_html=True)
-st.subheader("Biến động của các chỉ số Index")
+
 
 col_1, col_2  = st.columns(2) 
 
-selected_index_stock_code = ""
+selected_index_stock_code = "VN-Index"
 with col_2:
     stock_index['trading_date'] = pd.to_datetime(stock_index['trading_date'], errors='coerce')
     stock_index = stock_index.sort_values(by='trading_date').reset_index(drop=True)
     latest_stock_index_date = stock_index['trading_date'].max()
-    # latest_index_data = stock_index[stock_index['trading_date'] == latest_stock_index_date]
-
+    
     latest_index_data = calculate_percentage_changes(stock_index)
 
     
 
     gb = GridOptionsBuilder.from_dataframe(latest_index_data)
-    gb.configure_selection("single", use_checkbox=False)  # Enable single-row selection
+  
+    gb.configure_selection("single", use_checkbox=False)
+    for col, tooltip in stock_index_column_tooltips.items():
+        gb.configure_column(
+            col,
+            tooltipField=tooltip,
+            headerTooltip=tooltip,  #
+            cellStyle={
+            "textAlign": "center",  # Căn giữa nội dung
+            "fontWeight": "bold" if col == "stock_code" else "normal" , # Bôi đậm cho cột stock_code
+            "fontSize": "20px",
+            },
+        )
+
     grid_options = gb.build()
+    grid_options["rowHeight"] = 40  # Chiều cao mỗi dòng
 
     grid_response = AgGrid(
         latest_index_data,
         gridOptions=grid_options,
-        height=300,
+        height=500,
         update_mode=GridUpdateMode.SELECTION_CHANGED,
         theme="streamlit",  # Choose from: "streamlit", "light", "dark", "blue", "fresh", "material"
     )
@@ -371,7 +377,8 @@ with col_2:
     if grid_response.get("selected_rows") is not None and not grid_response["selected_rows"].empty:
         selected_row = grid_response["selected_rows"]
         selected_index_stock_code = selected_row["stock_code"].iloc[0]  # Access the first row's stock_code
-    else:
+    else:# latest_index_data = stock_index[stock_index['trading_date'] == latest_stock_index_date]
+    # st.table(stock_index.head(10))
         st.info("No row selected. Please select a row.")
     
     
@@ -397,35 +404,123 @@ with col_1:
     # Calculate the start and end date
     end_date = pd.Timestamp.today()
 
-    # Handle the start date based on selected period
     if selected_period is None:  # Trường hợp ALL
-        start_date = stock_index['trading_date'].min()  # Lấy giá trị nhỏ nhất từ dữ liệu
+        start_date = stock_index['trading_date'].min() 
     else:
         start_date = end_date - pd.Timedelta(days=selected_period)
 
-    # Ensure 'trading_date' is in datetime format
     stock_index['trading_date'] = pd.to_datetime(stock_index['trading_date'])
 
-    # Filter the data for the selected period and stock code
-    index_data = stock_index[(stock_index['stock_code'] == selected_index_stock_code) & 
-                            (stock_index['trading_date'] >= start_date)]
+    if selected_index_stock_code != "":
 
-    # Sort the data by trading_date
-    index_data = index_data.sort_values(by='trading_date').reset_index(drop=True)
+        # Filter the data for the selected period and stock code
+        index_data = stock_index[(stock_index['stock_code'] == selected_index_stock_code) & 
+                                (stock_index['trading_date'] >= start_date)]
 
-    # Plot the data using Plotly
-    index_fig = px.line(
-        index_data,
-        x='trading_date', 
-        y='closing_price', 
-        color='stock_code',
-        labels={'closing_price': 'Giá đóng cửa', 'trading_date': 'Ngày giao dịch'}
-    )
-    st.plotly_chart(index_fig, use_container_width=True)
+        index_data = index_data.sort_values(by='trading_date').reset_index(drop=True)
+        index_data['price_change_color'] = index_data['price_change'].apply(lambda x: 'green' if x > 0 else 'red')
+        index_data['price_change_percentage_color'] = index_data['price_change_percentage'].apply(lambda x: 'green' if x > 0 else 'red')
 
 
+        st.markdown(
+            f"""
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-top: 20px;">
+                    <div class="tooltip">
+                        <h3 style="color: #333;">Biến động giá của chỉ số <span style='color: #FF6347;'><b>{selected_index_stock_code}</b></span></h3>
+                        <span class="tooltiptext">
+                            Biểu đồ này thể hiện sự thay đổi giá đóng cửa của chỉ số  <span style='color: #FF6347;'><b>{selected_index_stock_code}</b></span> theo ngày giao dịch. 
+                            <ul style="list-style-type: none; padding: 0; text-align: left;">
+                                <li>Bạn có thể chọn khoảng thời gian cần xem xét từ thanh chọn ở trên, với các lựa chọn như 5 ngày, 1 tháng, 3 tháng, 6 tháng, từ đầu năm đến nay, 1 năm trước, hoặc toàn bộ dữ liệu.</li>
+                                <li>Màu sắc của đường thể hiện mức độ thay đổi giá trong khoảng thời gian được chọn:
+                                    <span style='color: green;'><b>Tăng</b></span> (màu xanh lá) hoặc 
+                                    <span style='color: red;'><b>Giảm</b></span> (màu đỏ).
+                                </li>
+                                <li>Mỗi điểm trên đường thể hiện giá đóng cửa của chỉ số tại một ngày giao dịch cụ thể.</li>
+                            </ul>
+                            <strong>Chú thích:</strong> 
+                            - <span style="color: green;"><b>Tăng</b></span>: Khi giá đóng cửa của chỉ số hôm nay cao hơn giá đóng cửa của ngày trước.
+                            - <span style="color: red;"><b>Giảm</b></span>: Khi giá đóng cửa của chỉ số hôm nay thấp hơn giá đóng cửa của ngày trước.
+                        </span>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True
+        )
 
-st.subheader("Top cổ phiếu ảnh hưởng đến chỉ số chứng khoán của sàn")
+        # Plot the data using Plotly
+        initial_price = index_data['closing_price'].iloc[0]
+        
+        index_data['line_color'] = index_data['closing_price'].apply(
+            lambda x: 'green' if x >= initial_price else 'red'
+        )
+
+        # Create a custom line color mapping for the trace
+        line_color = 'green' if index_data['closing_price'].iloc[-1] >= initial_price else 'red'
+
+        # Create the plot
+        index_fig = px.line(
+            index_data,
+            x='trading_date', 
+            y='closing_price', 
+            color='stock_code',
+            labels={'closing_price': '<b>Giá đóng cửa</b>', 'trading_date': '<b>Ngày giao dịch</b>'}
+        )
+
+    
+        index_fig.update_traces(
+            customdata=index_data[['price_change', 'price_change_percentage', 'price_change_color', 'price_change_percentage_color']],
+            line=dict(color=line_color),  # Dynamic line color
+             hovertemplate=(
+                "<b style='color:#1A4870;'>Ngày:</b> <b>%{x|%d-%m-%Y}</b><br>"
+                "<b style='color:#1A4870;'>Giá đóng cửa:</b> <b>%{y:.2f}</b><br>"
+                "<b style='color:#1A4870;'>Thay đổi giá:</b> "
+                "<b style='color:%{customdata[2]};'>%{customdata[0]:+.2f}</b><br>"
+                "<b style='color:#1A4870;'>Thay đổi phần trăm:</b> "
+                "<b style='color:%{customdata[3]};'>%{customdata[1]:+.2f}%%</b>"
+            ),
+            hoverlabel=dict(
+                font_size=14,
+                font_color="black",
+            )
+        )
+
+        # Set plot background color
+        index_fig.update_layout(
+            paper_bgcolor=background_color
+        )
+
+        # Display plot
+        st.plotly_chart(index_fig, use_container_width=True)
+
+
+
+# st.subheader("Top cổ phiếu ảnh hưởng đến chỉ số chứng khoán của sàn")
+st.markdown(
+    """
+    <div style="display: flex; flex-direction: column; margin-top: 20px; font-weight:bold">
+        <div class="tooltip">
+            <h3 style="color: #333;">Top cổ phiếu ảnh hưởng đến chỉ số chứng khoán của sàn</h3>
+            <span class="tooltiptext">
+                Biểu đồ này thể hiện sự ảnh hưởng của các cổ phiếu đối với chỉ số chứng khoán của sàn giao dịch. 
+                Cụ thể, mỗi cổ phiếu được tính toán dựa trên trọng số của nó trong tổng vốn hóa thị trường và thay đổi giá của cổ phiếu đó trong ngày giao dịch. 
+                <ul style="list-style-type: none; padding: 0; text-align: left;">
+                    <li><b>Thông tin biểu đồ:</b> 
+                        - Biểu đồ thanh (bar chart) thể hiện mức độ tác động của từng cổ phiếu lên chỉ số chứng khoán.
+                        - Cổ phiếu có tác động tích cực (màu xanh) có thể thúc đẩy chỉ số tăng lên, trong khi cổ phiếu có tác động tiêu cực (màu đỏ) có thể kéo chỉ số xuống.
+                    </li>
+                    <li><b>Ý nghĩa:</b> 
+                        - Việc phân tích tác động của cổ phiếu lên chỉ số giúp bạn hiểu được sự biến động của thị trường dựa trên mức độ ảnh hưởng của từng cổ phiếu.
+                        - Có thể phát hiện các cổ phiếu chủ chốt có tác động mạnh mẽ đến xu hướng chung của chỉ số, từ đó giúp đưa ra quyết định đầu tư chính xác hơn.
+                    </li>
+                </ul>
+                <strong>Chú thích:</strong> 
+                - <span style="color: green;"><b>Tăng</b></span>: Cổ phiếu có tác động tích cực giúp chỉ số tăng.
+                - <span style="color: red;"><b>Giảm</b></span>: Cổ phiếu có tác động tiêu cực làm giảm chỉ số.
+            </span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True
+)
+
 
 st.markdown(
             """
@@ -453,8 +548,6 @@ else:
 latest_market_data =  stock_data[stock_data['trade_date'] == latest_date][['stock_code', 'market_capitalization', 'price_change_percentage']]
 merged_data = pd.merge(filtered_stock_info, latest_market_data, left_on='code', right_on='stock_code', how='inner')
 
-# st.table(merged_data.head())
-
 total_market_cap = merged_data['market_capitalization'].sum()
 
 merged_data['weight'] = merged_data['market_capitalization'] / total_market_cap
@@ -478,119 +571,134 @@ impact_on_vn_index_fig = px.bar(
     labels={'impact_on_index': 'Độ ảnh hưởng', 'stock_code': 'Mã cổ phiếu'},
     color_discrete_map={'green': 'green', 'red': 'red'}
 )
+# st.write(impact_on_vn_index_fig.data[1])
+
+for trace in impact_on_vn_index_fig.data:
+
+    if trace.name == 'green':
+        group_data = filtered_data[filtered_data['color'] == 'green']
+    else:  # 'red'
+        group_data = filtered_data[filtered_data['color'] == 'red']
+    
+    # Thêm text vào trace
+    trace.text = group_data['impact_on_index'].round(4)
+    trace.textposition = 'outside'
+
 
 # Customize layout
 impact_on_vn_index_fig.update_layout(
-    xaxis_title="Mã cổ phiếu ",
-    yaxis_title="Tác động đến chỉ số index",
+    xaxis_title="<b>Mã cổ phiếu</b>",  # Bold x-axis title
+    yaxis_title="<b>Tác động đến chỉ số index</b>",  # Bold y-axis title
     showlegend=False,
-    margin=dict(t=50, l=25, r=25, b=25)
+    margin=dict(t=50, l=25, r=25, b=25),
+    font=dict(size=14),  # General font size for readability
 )
+impact_on_vn_index_fig.update_layout(
+            paper_bgcolor=background_color
+        )
+
+
 
 st.plotly_chart(impact_on_vn_index_fig, use_container_width=True)
 
+
 st.subheader("Top 10 cổ phiếu theo chỉ số")
+
 
 
 stock_financial_metrics['date'] = pd.to_datetime(stock_financial_metrics['date'], errors='coerce')
 stock_financial_metrics = stock_financial_metrics.sort_values(by='date').reset_index(drop=True)
 lastest_date = stock_financial_metrics['date'].max()
+
 lastest_finance_data = stock_financial_metrics[stock_financial_metrics['date'] == lastest_date]
 
-st.table(lastest_finance_data.head())
-# top_10_stock = stock_data[['stock_code', 'market_capitalization', 'closing_price', 'price_change', 'price_change_percentage']]
-# top_10_stock['price_change'] = top_10_stock['price_change'].apply(lambda x: f"{x} ({top_10_stock['price_change_percentage']}%)")
-# top_10_stock = top_10_stock.sort_values(by='market_capitalization', ascending=False).reset_index(drop=True)
+st.markdown(
+            """
+            <div class="tooltip tooltip-right">
+            Chọn sàn chứng khoán
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+exchange = st.selectbox(
+            "exchange",
+            options=["All", "HOSE", "HNX", "UPCoM"],
+            index=0,
+            label_visibility="collapsed",
+            key="selectbox_exchange_2"
+        )
+# st.table(stock_info.head())
+if "All" in exchange:
+    filtered_stock_codes = stock_info['code'].unique()
+else:
+
+    filtered_stock_codes = stock_info[stock_info['exchange'] == exchange]['code'].unique()
+
+filtered_lastest_finance_data = lastest_finance_data[lastest_finance_data['stock_code'].isin(filtered_stock_codes)]
 
 
-metrics = {
-"P/E": "pe",
-"P/B": "pb",
-"EPS": "eps",
-}
 
-# # Create tabs dynamically
-# tabs = st.tabs(list(metrics.keys()))
+def process_and_display_for_metric(metric_name, column1, column2):
+    criteria_column = [
+        key for key, value in finance_metric_features_mapping.items() if value == metric_name
+    ][0]
+    
+    # Kiểm tra dữ liệu có cột không và lọc top 10 cổ phiếu
+    if criteria_column in filtered_lastest_finance_data.columns:
+        top_10_stocks = filtered_lastest_finance_data.sort_values(by=criteria_column, ascending=False).head(10)
 
-# # Populate each tab with data
-# for tab, (tab_name, column) in zip(tabs, metrics.items()):
-#     with tab:
-#         sorted_data = lastest_finance_data.sort_values(by=column, ascending=False).head(10)
-#         st.table(sorted_data.head())
+        # Kết hợp với dữ liệu cổ phiếu mới nhất
+        merged_top_10_stocks = pd.merge(
+            top_10_stocks,
+            latest_stock_data[['stock_code', 'total_trading_volume', 'closing_price', 'price_change_percentage']],
+            on='stock_code',
+            how='left'
+        )
 
-col1, col2 = st.columns(2)
+        with st.expander(f"{metric_name}"):
+            st.markdown(f"**Mô tả:** {finance_metric_explanations[metric_name]['description']}")
+            st.markdown(f"**Insights:** {finance_metric_explanations[metric_name]['insights']}")
 
+        # Tạo layout chia thành 2 cột
+        col1, col2 = st.columns(2)
 
-with col1:
-    st.markdown("Top 10 cổ phiếu")
-
-    tabs = st.tabs(list(finance_metric_features_mapping.values())[0:4])
-
-    for tab_name, tab in zip(finance_metric_features_mapping.values(), tabs):
-        with tab:
-            # Chuyển từ tên tiếng Việt sang tiếng Anh
-            criteria_column = [
-                key for key, value in finance_metric_features_mapping.items() if value == tab_name
-            ][0]
-
-            # Kiểm tra dữ liệu có cột không
-            if criteria_column in lastest_finance_data.columns:
-     
-                top_10_stocks = ( lastest_finance_data.sort_values(by=criteria_column, ascending=False).head(10))
-
-                merged_top_10_stocks = pd.merge(
-                    top_10_stocks,
-                    latest_stock_data[['stock_code', 'total_trading_volume', 'closing_price', 'price_change_percentage']],  # Columns from latest_stock_data
-                    on='stock_code',
-                    how='left'
+        with col2:
+            fig = px.bar(
+                merged_top_10_stocks,
+                x='stock_code', 
+                y=criteria_column, 
+                labels={criteria_column: metric_name, 'stock_code': 'Mã Cổ Phiếu'},
+                title=f"Top 10 Cổ Phiếu Theo {metric_name}",
+                color=criteria_column,  # Thêm màu sắc cho cột
+                color_continuous_scale='Viridis'  # Chọn màu sắc cho biểu đồ
+            )
+            fig.update_layout(
+                paper_bgcolor=background_color
                 )
-
-                st.write(
-                    merged_top_10_stocks[['stock_code', 'total_trading_volume', 'closing_price', 'price_change_percentage', criteria_column]].rename(columns={
-                        "stock_code": "Mã CK",
-                        "total_trading_volume": "Khối lượng giao dịch",
-                        "closing_price": "Giá", 
-                        "price_change_percentage": "Thay đổi", 
-                        criteria_column: tab_name,
-                    })
-                )
-
-            else:
-                st.warning(f"Dữ liệu không có tiêu chí: {tab_name}")
+            st.plotly_chart(fig)
 
 
-with col2:
-    st.markdown("Top 10 theo chỉ số")
-    tabs = st.tabs(list(finance_metric_features_mapping.values())[4:])
+    
+        with col1:
+            st.dataframe(
+                merged_top_10_stocks[['stock_code', 'total_trading_volume', 'closing_price', 'price_change_percentage', criteria_column]].rename(columns={
+                    "stock_code": "Mã CK",
+                    "total_trading_volume": "Khối lượng giao dịch",
+                    "closing_price": "Giá",
+                    "price_change_percentage": "Thay đổi",
+                    criteria_column: metric_name,
+                })
+            )
+    else:
+        st.warning(f"Dữ liệu không có tiêu chí: {metric_name}")
 
-    for tab_name, tab in zip(finance_metric_features_mapping.values(), tabs):
-        with tab:
-            # Chuyển từ tên tiếng Việt sang tiếng Anh
-            criteria_column = [
-                key for key, value in finance_metric_features_mapping.items() if value == tab_name
-            ][0]
 
-            # Kiểm tra dữ liệu có cột không
-            if criteria_column in lastest_finance_data.columns:
-     
-                top_10_stocks = ( lastest_finance_data.sort_values(by=criteria_column, ascending=False).head(10))
 
-                merged_top_10_stocks = pd.merge(
-                    top_10_stocks,
-                    latest_stock_data[['stock_code', 'total_trading_volume', 'closing_price', 'price_change_percentage']],  # Columns from latest_stock_data
-                    on='stock_code',
-                    how='left'
-                )
+# Tạo tabs từ finance_metric_features_mapping
+tab_names = list(finance_metric_features_mapping.values())
+tabs = st.tabs(tab_names)
 
-                st.write(
-                    merged_top_10_stocks[['stock_code', 'total_trading_volume', 'closing_price', 'price_change_percentage', criteria_column]].rename(columns={
-                        "stock_code": "Mã CK",
-                        "total_trading_volume": "Khối lượng giao dịch",
-                        "closing_price": "Giá", 
-                        "price_change_percentage": "Thay đổi", 
-                        criteria_column: tab_name,
-                    })
-                )
-
-            else:
-                st.warning(f"Dữ liệu không có tiêu chí: {tab_name}")
+# Xử lý thủ công mỗi tab được chọn
+for i, tab_name in enumerate(tab_names):
+    with tabs[i]:
+        process_and_display_for_metric(tab_name, col1, col2)
