@@ -253,6 +253,8 @@ with chart_col:
         upcom_index_data = stock_index[stock_index['stock_code'] == 'UPCOM-Index']
 
         vn_index_data = vn_index_data.sort_values(by="trading_date", ascending=False).reset_index(drop=True)
+        hnx_index_data = hnx_index_data.sort_values(by="trading_date", ascending=False).reset_index(drop=True)
+        upcom_index_data = upcom_index_data.sort_values(by="trading_date", ascending=False).reset_index(drop=True)
 
         display_index_overview(vn_index_data, "VN-Index", "VN-Index", "HOSE")
         display_index_overview(hnx_index_data, "HNX-Index", "HNX-Index", "HNX")
