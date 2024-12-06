@@ -28,8 +28,8 @@ headers = {
 base_data = {
     'page': '1',
     'pageSize': '20',
-    'fromDate': '2022-10-14',
-    'toDate': '2024-12-06',
+    'fromDate': '2022-12-06',
+    'toDate': '2024-12-07',
     '__RequestVerificationToken': 'rVyx37ITw6hQwfsQvpO4hXz3meH5pFr8LTLDPh8tRhLCYYooaEH5u5KkgyaCFzImSZJY7xOQ-bhoCOgqyzXJQzQGORZhqqdEp8NRZsNXDPICO2hXg9ekQLIksNqChCnT0'
 }
 
@@ -152,6 +152,7 @@ def fetch_and_insert_data(index_name, catID, stockID):
     # Rename columns based on field names
     all_data = all_data[field_names.keys()]
     all_data = all_data.rename(columns=field_names)
+    print(all_data.head())
 
     # Insert data into database
     try:

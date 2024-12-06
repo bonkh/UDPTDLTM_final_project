@@ -135,7 +135,6 @@ def fetch_and_insert_stock_data():
                     logging.error(f"Error processing stock code {stock_code}: {e}")
 
 # fetch_and_insert_stock_data()
-
 def fetch_and_save_stock_data_to_csv(output_file="stock_data.csv"):
     scraper = cloudscraper.create_scraper()
     engine = create_engine(conn_str)
@@ -154,8 +153,11 @@ def fetch_and_save_stock_data_to_csv(output_file="stock_data.csv"):
                 stock_code = futures[future]
                 try:
                     data = future.result()
-                    if data:
+                    # Kiểm tra xem có `date` không, nếu không thì loại bỏ
+                    if data and data.get('date'):
                         all_data.append(data)
+                    else:
+                        logging.warning(f"No valid date for stock code {stock_code}. Data skipped.")
                 except Exception as e:
                     logging.error(f"Error processing stock code {stock_code}: {e}")
 
