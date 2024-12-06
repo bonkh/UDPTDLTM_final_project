@@ -424,7 +424,7 @@ with col_1:
 
         st.markdown(
             f"""
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-top: 20px;">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-top: 20px;font-weight:bold">
                     <div class="tooltip">
                         <h3 style="color: #333;">Biến động giá của chỉ số <span style='color: #FF6347;'><b>{selected_index_stock_code}</b></span></h3>
                         <span class="tooltiptext">
@@ -524,7 +524,7 @@ st.markdown(
 
 st.markdown(
             """
-            <div class="tooltip tooltip-right">
+            <div class="tooltip tooltip-right" style = "font-weight:bold">
             Chọn sàn chứng khoán
             </div>
             """,
@@ -602,7 +602,15 @@ impact_on_vn_index_fig.update_layout(
 st.plotly_chart(impact_on_vn_index_fig, use_container_width=True)
 
 
-st.subheader("Top 10 cổ phiếu theo chỉ số")
+st.markdown(
+    f"""
+        <div class="tooltip tooltip-right" style="font-weight: bold">
+            <h3>Top 10 cổ phiếu theo chỉ số</h3>
+            <span class="tooltiptext">
+                Biểu đồ này thể hiện top 10 cổ phiếu được đánh giá trên một số chỉ số tài chính, giúp đánh giá chi tiết hơn và tìm ra được các cổ phiểu tiềm năng trên từng chỉ số  .
+            </span>
+        </div>
+    """, unsafe_allow_html=True)
 
 
 
@@ -614,7 +622,7 @@ lastest_finance_data = stock_financial_metrics[stock_financial_metrics['date'] =
 
 st.markdown(
             """
-            <div class="tooltip tooltip-right">
+            <div class="tooltip tooltip-right" style = "font-weight:bold">
             Chọn sàn chứng khoán
             </div>
             """,
@@ -635,7 +643,14 @@ else:
     filtered_stock_codes = stock_info[stock_info['exchange'] == exchange]['code'].unique()
 
 filtered_lastest_finance_data = lastest_finance_data[lastest_finance_data['stock_code'].isin(filtered_stock_codes)]
-
+filtered_lastest_finance_data = pd.merge(
+    filtered_lastest_finance_data,
+    latest_stock_data[['stock_code', 'market_capitalization']],  # Lọc chỉ cột stock_code và market_capitalization
+    on='stock_code',  # Dựa trên cột stock_code để merge
+    how='left'  # Giữ tất cả dữ liệu từ filtered_lastest_finance_data, nếu không có match thì điền NaN
+)
+# 
+# st.table(filtered_lastest_finance_data.head())
 
 
 def process_and_display_for_metric(metric_name, column1, column2):
@@ -645,7 +660,13 @@ def process_and_display_for_metric(metric_name, column1, column2):
     
     # Kiểm tra dữ liệu có cột không và lọc top 10 cổ phiếu
     if criteria_column in filtered_lastest_finance_data.columns:
-        top_10_stocks = filtered_lastest_finance_data.sort_values(by=criteria_column, ascending=False).head(10)
+        # top_10_stocks = filtered_lastest_finance_data.sort_values(by=criteria_column, ascending=False).head(10)
+        if metric_name in ['PE', 'P/B']:  # P/E và P/B cần lọc theo giá trị thấp nhất
+            top_10_stocks = filtered_lastest_finance_data.sort_values(by=criteria_column, ascending=True).head(10)
+        elif metric_name in ['EPS', 'Vốn hóa thị trường']:  # EPS và Vốn hóa cần lọc theo giá trị lớn nhất
+            top_10_stocks = filtered_lastest_finance_data.sort_values(by=criteria_column, ascending=False).head(10)
+        else:
+            top_10_stocks = filtered_lastest_finance_data.sort_values(by=criteria_column, ascending=False).head(10)
 
         # Kết hợp với dữ liệu cổ phiếu mới nhất
         merged_top_10_stocks = pd.merge(
@@ -689,6 +710,7 @@ def process_and_display_for_metric(metric_name, column1, column2):
                     criteria_column: metric_name,
                 })
             )
+            st.markdown("PE thấp nhất, P/B thấp nhất, EPS lớn nhất, Vốn hóa lớn nhất (tỷ đồng), các chỉ số khác lớn nhất.")
     else:
         st.warning(f"Dữ liệu không có tiêu chí: {metric_name}")
 

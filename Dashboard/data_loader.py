@@ -48,11 +48,7 @@ columns_map = {
 
 @st.cache_data
 def load_all_tables(columns_map=columns_map):
-    """
-    Load all tables from the database. Optionally, specify columns for each table using columns_map.
-    :param columns_map: A dictionary where the key is the table name and the value is a list of columns to query.
-    :return: A dictionary of DataFrames, keyed by table name.
-    """
+  
     tables = ["stock_data", "stock_info", "financial_metrics", "stock_index"]
     data_frames = {}
 
@@ -73,12 +69,7 @@ def load_all_tables(columns_map=columns_map):
 
 @st.cache_data
 def load_data(table_name, columns=None):
-    """
-    Loads data from a specified table in the database.
-    :param table_name: Name of the table to query.
-    :param columns: List of columns to select (optional).
-    :return: A Pandas DataFrame containing the data from the table.
-    """
+   
     engine = create_engine(conn_str)
     # Build SQL query
     columns_query = ", ".join(columns) if columns else "*"
@@ -96,3 +87,20 @@ def load_stock_data(columns=None):
     :return: A Pandas DataFrame containing the stock data.
     """
     return load_data("stock_data", columns if columns else stock_data_necessary_columns)
+@st.cache_data
+def load_article():
+    try:
+        load_dotenv()
+        conn_str = os.getenv('DATABASE_RENDER')
+
+        engine = create_engine(conn_str)
+
+        # Fetch data from the table
+        query = f"SELECT * FROM article;"
+        with engine.connect() as connection:
+            df = pd.read_sql(query, connection)
+        df['date'] = pd.to_datetime(df['date'])
+        
+        return df
+    except Exception as e:
+        print(e)

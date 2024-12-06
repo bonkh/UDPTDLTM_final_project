@@ -18,7 +18,11 @@ from tensorflow.keras.layers import Dense, LSTM
 from math import ceil, sqrt
 import datetime
 import warnings
+import requests
+from bs4 import BeautifulSoup
 from data_loader import load_all_tables
+from models.chroma_loader import load_existing_chroma_db
+from models.rag_retriever_handler_dashboard import generate_answer
 
 warnings.filterwarnings("ignore")
 
@@ -177,70 +181,70 @@ def buy_n_sell(df, stock_code, col='closing_price', period1=20, period2=50, peri
 
     st.plotly_chart(fig)
 
-def lstm_prediction_plotly(df, train_ratio=0.75, epochs=1):
-    window_size = 40
-    if df.shape[0] < window_size:
-        st.write("Not enough data to train the model. Need at least window_size data points.")
-        return
+# def lstm_prediction_plotly(df, train_ratio=0.75, epochs=1):
+#     window_size = 40
+#     if df.shape[0] < window_size:
+#         st.write("Not enough data to train the model. Need at least window_size data points.")
+#         return
 
-    # Đảm bảo cột 'trade_date' là datetime và đặt làm index
-    df['trade_date'] = pd.to_datetime(df['trade_date'])
-    df.set_index('trade_date', inplace=True)
+#     # Đảm bảo cột 'trade_date' là datetime và đặt làm index
+#     df['trade_date'] = pd.to_datetime(df['trade_date'])
+#     df.set_index('trade_date', inplace=True)
 
-    # Chuẩn bị dữ liệu
-    df_new = df[['closing_price']]
-    dataset = df_new.values
-    train_size = ceil(df.shape[0] * train_ratio)
-    train = df_new[:train_size]
-    valid = df_new[train_size:]
+#     # Chuẩn bị dữ liệu
+#     df_new = df[['closing_price']]
+#     dataset = df_new.values
+#     train_size = ceil(df.shape[0] * train_ratio)
+#     train = df_new[:train_size]
+#     valid = df_new[train_size:]
     
-    scaler = MinMaxScaler(feature_range=(0, 1))
-    scaled_data = scaler.fit_transform(dataset)
+#     scaler = MinMaxScaler(feature_range=(0, 1))
+#     scaled_data = scaler.fit_transform(dataset)
     
-    # Chuẩn bị dữ liệu train
-    x_train, y_train = [], []
-    for i in range(window_size, len(train)):
-        x_train.append(scaled_data[i-window_size:i, 0])
-        y_train.append(scaled_data[i, 0])
+#     # Chuẩn bị dữ liệu train
+#     x_train, y_train = [], []
+#     for i in range(window_size, len(train)):
+#         x_train.append(scaled_data[i-window_size:i, 0])
+#         y_train.append(scaled_data[i, 0])
     
-    x_train, y_train = np.array(x_train), np.array(y_train)
-    x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
+#     x_train, y_train = np.array(x_train), np.array(y_train)
+#     x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
     
-    # Xây dựng mô hình LSTM
-    model = Sequential([
-        LSTM(units=50, return_sequences=True, input_shape=(x_train.shape[1], 1)),
-        LSTM(units=50),
-        Dense(1)
-    ])
-    model.compile(loss='mean_squared_error', optimizer='adam')
+#     # Xây dựng mô hình LSTM
+#     model = Sequential([
+#         LSTM(units=50, return_sequences=True, input_shape=(x_train.shape[1], 1)),
+#         LSTM(units=50),
+#         Dense(1)
+#     ])
+#     model.compile(loss='mean_squared_error', optimizer='adam')
 
-    # Huấn luyện mô hình
-    model.fit(x_train, y_train, epochs=epochs, batch_size=1, verbose=2)
+#     # Huấn luyện mô hình
+#     model.fit(x_train, y_train, epochs=epochs, batch_size=1, verbose=2)
     
-    # Chuẩn bị dữ liệu validate
-    inputs = df_new[len(df_new) - len(valid) - window_size:].values
-    inputs = scaler.transform(inputs.reshape(-1, 1))
+#     # Chuẩn bị dữ liệu validate
+#     inputs = df_new[len(df_new) - len(valid) - window_size:].values
+#     inputs = scaler.transform(inputs.reshape(-1, 1))
     
-    x_validate = []
-    for i in range(window_size, inputs.shape[0]):
-        x_validate.append(inputs[i-window_size:i, 0])
-    x_validate = np.array(x_validate)
-    x_validate = np.reshape(x_validate, (x_validate.shape[0], x_validate.shape[1], 1))
+#     x_validate = []
+#     for i in range(window_size, inputs.shape[0]):
+#         x_validate.append(inputs[i-window_size:i, 0])
+#     x_validate = np.array(x_validate)
+#     x_validate = np.reshape(x_validate, (x_validate.shape[0], x_validate.shape[1], 1))
     
-    # Dự đoán giá
-    predicted_price = model.predict(x_validate)
-    predicted_price = scaler.inverse_transform(predicted_price)
-    valid['Predictions'] = predicted_price
+#     # Dự đoán giá
+#     predicted_price = model.predict(x_validate)
+#     predicted_price = scaler.inverse_transform(predicted_price)
+#     valid['Predictions'] = predicted_price
 
-    # Biểu đồ dự đoán LSTM
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=train.index, y=train['closing_price'], mode='lines', name='Train'))
-    fig.add_trace(go.Scatter(x=valid.index, y=valid['closing_price'], mode='lines', name='Valid'))
-    fig.add_trace(go.Scatter(x=valid.index, y=valid['Predictions'], mode='lines', name='Prediction'))
-    fig.update_layout(title="Dự đoán giá cổ phiếu bằng LSTM", xaxis_title="Thời gian", yaxis_title="Giá",
-                      xaxis=dict(type='date', tickformat='%b %Y'), height=600, autosize=True)
+#     # Biểu đồ dự đoán LSTM
+#     fig = go.Figure()
+#     fig.add_trace(go.Scatter(x=train.index, y=train['closing_price'], mode='lines', name='Train'))
+#     fig.add_trace(go.Scatter(x=valid.index, y=valid['closing_price'], mode='lines', name='Valid'))
+#     fig.add_trace(go.Scatter(x=valid.index, y=valid['Predictions'], mode='lines', name='Prediction'))
+#     fig.update_layout(title="Dự đoán giá cổ phiếu bằng LSTM", xaxis_title="Thời gian", yaxis_title="Giá",
+#                       xaxis=dict(type='date', tickformat='%b %Y'), height=600, autosize=True)
     
-    st.plotly_chart(fig)
+#     st.plotly_chart(fig)
 
 def lstm_future_prediction(df, train_ratio=0.75, epochs=1, future_months=1):
     # Kiểm tra cột 'trade_date' có tồn tại không
@@ -438,6 +442,261 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+headers = {
+        'Server':'nginx',
+        'Accept': '*/*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Connection': 'keep-alive',
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0',
+    }
+
+# Hàm lấy token
+def get_request_token(stock_code, cookies):
+    url = f'https://finance.vietstock.vn/{stock_code}/thong-ke-giao-dich.htm'
+    response = requests.get(url, headers=headers, cookies=cookies)
+    
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.text, 'html.parser')
+        token_element = soup.find('input', {'name': '__RequestVerificationToken'})
+        if token_element:
+            return token_element.get('value')
+        else:
+            print("Không tìm thấy token.")
+    return None
+
+# Hàm lấy dữ liệu giao dịch trong ngày và chuyển thành DataFrame
+def get_stock_data(stock_code, cookies):
+    # Lấy token
+    token = get_request_token(stock_code, cookies)
+    
+    url = 'https://finance.vietstock.vn/data/getstockdealdetailbytime'
+    
+    # Dữ liệu gửi đi
+    body = {
+        'code': stock_code,
+        'interval': '1',
+        '__RequestVerificationToken': token
+    }
+
+    # Gửi yêu cầu POST
+    response = requests.post(url, headers=headers, data=body, cookies=cookies)
+
+    # Chuyển dữ liệu JSON thành DataFrame
+    jsondata = json.loads(response.text)
+    oneday_df = pd.DataFrame(jsondata)
+    
+    # Tiền xử lý dữ liệu
+    oneday_df.drop(columns=['TradingDate', 'Timetype','Max','Min'], inplace=True)
+    oneday_df['TradingDateStr'] = pd.to_datetime(oneday_df['TradingDateStr'])
+    oneday_df['TradingDateStr'] = oneday_df['TradingDateStr'].dt.strftime('%H:%M:%S')
+    
+    # Đổi tên cột
+    oneday_df.rename(columns={'TradingDateStr':'Thời gian','Price':'Giá','Vol':'KL Lô','Package':'KL tích luỹ'}, inplace=True)
+    
+    # Sắp xếp theo thời gian
+    oneday_df = oneday_df[['Thời gian','Giá','KL Lô','KL tích luỹ']]
+
+    
+    return oneday_df
+
+# Hàm vẽ biểu đồ
+def plot_stock_data(oneday_df, stock_code):
+    # Nhóm dữ liệu theo 5 phút
+    grouped_df = oneday_df.groupby(pd.Grouper(key='Thời gian', freq='5T')).mean().reset_index()
+    grouped_df.fillna(method='ffill', inplace=True)
+    
+    # Tạo biểu đồ con cho Giá và KL tích luỹ
+    fig = make_subplots(
+        rows=2, cols=1, 
+        shared_xaxes=True,  # Chia sẻ trục X
+        vertical_spacing=0.1,  # Khoảng cách giữa 2 biểu đồ
+        subplot_titles=(
+            f'Biểu đồ Giá theo thời gian thực của {stock_code}', 
+            f'Biểu đồ Khối lượng tích luỹ theo thời gian thực của {stock_code}'
+        ),
+        row_heights=[0.7, 0.3]  # Điều chỉnh chiều cao cho từng biểu đồ
+    )
+
+    # Vẽ biểu đồ đường cho 'Giá'
+    fig.add_trace(
+        go.Scatter(x=grouped_df['Thời gian'], y=grouped_df['Giá'], 
+                   mode='lines', name='Giá', line=dict(color='blue')),
+        row=1, col=1
+    )
+
+    # Vẽ biểu đồ cột cho 'KL tích luỹ'
+    fig.add_trace(
+        go.Bar(x=grouped_df['Thời gian'], y=grouped_df['KL tích luỹ'],
+               name='Khối lượng tích luỹ', marker=dict(color='rgba(144,238,144,0.8)')),
+        row=2, col=1
+    )
+
+    # Cập nhật layout
+    fig.update_layout(
+        title=f'Biểu đồ Giá và Khối lượng tích luỹ theo thời gian thực của {stock_code}',
+        xaxis=dict(
+            showticklabels=False  # Tắt nhãn trục X trên cùng
+        ),
+        xaxis2=dict(
+            title='Thời gian',    # Hiển thị nhãn ở trục X dưới cùng
+            showticklabels=True   # Bật nhãn ở dưới
+        ),
+        yaxis_title='Giá',
+        yaxis2_title='Khối lượng tích luỹ',
+        height=700,  # Chiều cao tổng thể của cả figure
+        showlegend=True
+    )
+    
+    # Hiển thị biểu đồ trong Streamlit
+    st.plotly_chart(fig)
+
+
+# Hàm chính để tích hợp toàn bộ quy trình
+def plot_real_time(stock_code, cookies):
+    # st.markdown(
+    #     f"""
+    #     <div style="
+    #         background-color: #f9f9f9; 
+    #         border-radius: 8px; 
+    #         padding: 16px; 
+    #         margin-bottom: 16px; 
+    #         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    #     ">
+    #     <h4 style="color: #4CAF50; margin-bottom: 8px;">Biến động trong ngày</h4>
+    #     </div>
+    #     """,
+    #     unsafe_allow_html=True
+    # )
+
+    # Lấy dữ liệu và hiển thị
+    oneday_df = get_stock_data(stock_code, cookies)
+    oneday_df['Thời gian'] = pd.to_datetime(oneday_df['Thời gian'], errors='coerce')
+    oneday_df = oneday_df.sort_values(by='Thời gian')
+
+    # Tính giá trị trung bình của giá
+    average_price = oneday_df['Giá'].mean()
+
+    # Tạo subplot
+    fig = make_subplots(
+        rows=2, cols=1, 
+        shared_xaxes=True,
+        vertical_spacing=0.1,
+        subplot_titles=('Biểu đồ Giá theo Thời gian', 'Biểu đồ KL lô theo Thời gian'),
+        row_heights=[0.6, 0.4]
+    )
+
+    # Vẽ từng đoạn đường màu sắc dựa trên vị trí so với đường trung bình
+    for i in range(len(oneday_df) - 1):
+        x_vals = [oneday_df['Thời gian'].iloc[i], oneday_df['Thời gian'].iloc[i + 1]]
+        y_vals = [oneday_df['Giá'].iloc[i], oneday_df['Giá'].iloc[i + 1]]
+
+        if all(y > average_price for y in y_vals):  # Cả hai điểm nằm trên đường trung bình
+            color = 'green'
+        elif all(y < average_price for y in y_vals):  # Cả hai điểm nằm dưới đường trung bình
+            color = 'red'
+        else:
+            # Tìm giao điểm với đường trung bình (nếu đoạn cắt qua đường trung bình)
+            x_cross = x_vals[0] + (x_vals[1] - x_vals[0]) * ((average_price - y_vals[0]) / (y_vals[1] - y_vals[0]))
+            y_cross = average_price
+
+            # Đoạn từ đầu đến giao điểm
+            fig.add_trace(
+                go.Scatter(
+                    x=[x_vals[0], x_cross],
+                    y=[y_vals[0], y_cross],
+                    mode='lines',
+                    line=dict(color='green' if y_vals[0] > average_price else 'red', width=2),
+                    showlegend=False
+                ),
+                row=1, col=1
+            )
+            # Đoạn từ giao điểm đến cuối
+            fig.add_trace(
+                go.Scatter(
+                    x=[x_cross, x_vals[1]],
+                    y=[y_cross, y_vals[1]],
+                    mode='lines',
+                    line=dict(color='green' if y_vals[1] > average_price else 'red', width=2),
+                    showlegend=False
+                ),
+                row=1, col=1
+            )
+            continue
+
+        # Vẽ đoạn đường không cắt qua đường trung bình
+        fig.add_trace(
+            go.Scatter(
+                x=x_vals,
+                y=y_vals,
+                mode='lines',
+                line=dict(color=color, width=2),
+                showlegend=False
+            ),
+            row=1, col=1
+        )
+
+
+    # Vẽ biểu đồ cột cho 'KL tích luỹ'
+    fig.add_trace(
+        go.Bar(x=oneday_df['Thời gian'], y=oneday_df['KL Lô'],
+               name='KL Lô', marker=dict(color='orange')),
+        row=2, col=1
+    )
+
+    # Cập nhật layout
+    fig.update_layout(
+        title='Biểu đồ Giá và KL lô theo Thời gian',
+        height=800,
+        showlegend=True
+    )
+
+    # CSS để đồng bộ chiều cao bảng
+    table_height_css = """
+    <style>
+        .dataframe-container {
+            max-height: 800px;
+            overflow-y: auto;
+        }
+    </style>
+    """
+
+    # Chia bố cục hiển thị
+    col1, col2 = st.columns([2, 1], gap="medium")
+    oneday_df_copy = oneday_df.copy()
+    #Đặt thời gian là index
+    oneday_df_copy['Thời gian'] = oneday_df_copy['Thời gian'].dt.strftime('%H:%M:%S')
+    oneday_df_copy=oneday_df_copy.sort_values(by='Thời gian', ascending=False)
+
+    oneday_df_copy=oneday_df_copy.set_index('Thời gian')
+        # Biểu đồ bên trái
+    with col1:
+        st.plotly_chart(fig, use_container_width=True)
+
+    # Bảng bên phải
+    with col2:
+        st.write("### Dữ liệu Chi tiết")
+        st.markdown(table_height_css, unsafe_allow_html=True)
+        st.dataframe(oneday_df_copy, use_container_width=True, height=700)
+
+    
+
+# Tạo một session để giữ cookies
+session = requests.Session()
+
+# Gửi yêu cầu GET tới trang web bạn muốn lấy cookies
+response = session.get('https://finance.vietstock.vn/ACB/thong-ke-giao-dich.htm',headers=headers)
+
+# In ra cookies đã nhận được
+request_token=session.cookies.get_dict()['__RequestVerificationToken']
+
+cookies = {
+        '__RequestVerificationToken':request_token
+       }
+
+plot_real_time(stock_code, cookies)
+
 # Ngày mới nhất trong dữ liệu
 today = stock_data['trade_date'].max()
 
@@ -492,7 +751,7 @@ buy_n_sell(filtered_data, stock_code=stock_code, col='closing_price', period1=pe
 
 # Hiển thị dự đoán LSTM
 stock_data = data[data['stock_code'] == stock_code].sort_values(by='trade_date').reset_index(drop=True)
-lstm_prediction_plotly(stock_data, train_ratio=0.75, epochs=10)
+# lstm_prediction_plotly(stock_data, train_ratio=0.75, epochs=10)
 
 # Dự đoán giá trong tương lai
 stock_data = data[data['stock_code'] == stock_code]
@@ -516,44 +775,9 @@ data = {
     "reference_price": stock_data["reference_price"].values.tolist(),
     "price_change": stock_data["price_change"].values.tolist(),
     "price_change_percentage": stock_data["price_change_percentage"].values.tolist(),
-    # "difference": stock_data["difference"].values.tolist(),
-    # "average_price": stock_data["average_price"].values.tolist(),
-    # "adjusted_closing_price": stock_data[
-    #     "adjusted_closing_price"
-    # ].values.tolist(),
     "total_trading_volume": stock_data["total_trading_volume"].values.tolist(),
     "total_trading_value": stock_data["total_trading_value"].values.tolist(),
-    # "buy_limit": stock_data["buy_limit"].values.tolist(),
-    # "sell_limit": stock_data["sell_limit"].values.tolist(),
 }
-
-# Định nghĩa chuỗi system với các dấu {} được thoát
-# system = """You are an expert at Stock analysis.  
-# Here is the context you should refer to:  
-# Your task is to analyze the stock performance over the past month based on the provided metrics. Use the following data points extracted from the stock dataset:
-# - stock_code: {stock_code} (Mã cổ phiếu).  
-# - opening_price: {opening_price} (Giá mở cửa mỗi ngày).  
-# - closing_price: {closing_price} (Giá đóng cửa mỗi ngày).  
-# - highest_price: {highest_price} (Giá cao nhất trong ngày).  
-# - lowest_price: {lowest_price} (Giá thấp nhất trong ngày).  
-# - reference_price: {reference_price} (Giá tham chiếu để đánh giá mức tăng hoặc giảm).  
-# - price_change: {price_change} (Sự thay đổi giá trong ngày).  
-# - price_change_percentage: {price_change_percentage} (Phần trăm thay đổi giá mỗi ngày).  
-# - difference: {difference} (Mức dao động giá trong ngày).  
-# - average_price: {average_price} (Giá trung bình giao dịch mỗi ngày).  
-# - adjusted_closing_price: {adjusted_closing_price} (Giá đóng cửa điều chỉnh, nếu có).  
-# - total_trading_volume: {total_trading_volume} (Tổng khối lượng giao dịch trong ngày).  
-# - total_trading_value: {total_trading_value} (Tổng giá trị giao dịch trong ngày).  
-# - buy_limit: {buy_limit} (Giới hạn mua, thể hiện áp lực mua).  
-# - sell_limit: {sell_limit} (Giới hạn bán, thể hiện áp lực bán).
-
-# Your response must be in Vietnamese and in JSON format with the following structure:  
-# ```json
-# {{
-#   "question": "What is the stock performance over the past month?",
-#   "answer": "Your detailed analysis based on the context and data"
-# }}
-# """
 
 system = """You are an expert at Stock analysis.  
 Here is the context you should refer to:  
@@ -612,5 +836,56 @@ with st.spinner("Đang phân tích..."):
 # Hiển thị kết quả nếu có
 if st.session_state.analysis_result:
     with st.container():
-        st.write("*Kết quả phân tích:*")
+        st.write("### Kết quả phân tích:")
         st.write(response)
+
+def load_vectordb(db_path):
+    vector_db = load_existing_chroma_db(db_path)
+    print(f"Number of documents in vector DB: {len(vector_db.get())}")
+    return vector_db
+
+
+# Thêm thông tin báo về cổ phiếu
+if "stock_news" not in st.session_state:
+    st.session_state.stock_news = None
+
+with st.spinner("Đang tìm kiếm thông tin cổ phiếu..."):
+    vector_db = load_vectordb("vector_db")
+    query_news = f"Thông tin cổ phiếu {company_name} {stock_code}"
+    output = generate_answer(vector_db, query_news, top_k=10)
+    output = json.loads(output)
+    links = output["links"]
+    titles = output["titles"]
+    date = output["date"]
+    stock_news = {"links": links, "titles": titles, "date": date}
+    st.session_state.stock_news = output
+
+
+def sorted_news(news):
+    news["date"] = [datetime.datetime.strptime(date, "%d/%m/%Y") for date in news["date"]]  # Chuyển đổi ngày thành datetime
+    # Sắp xếp theo ngày
+    sorted_news = {
+        "links": [],
+        "titles": [],
+        "date": [],
+    }
+    sorted_news["links"], sorted_news["titles"], sorted_news["date"] = zip(
+        *sorted(
+            zip(news["links"], news["titles"], news["date"]),
+            key=lambda x: x[2],
+            reverse=True,
+        )
+    )
+    return sorted_news
+
+
+# Hiển thị thông tin cổ phiếu
+if st.session_state.stock_news:
+    with st.container():
+        st.write(f"### Tóm tắt các bài báo liên quan cổ phiếu {stock_code}:")
+        st.write(output["answer"])
+        st.write("### Tin tức mới nhất:")
+        sorted_news = sorted_news(st.session_state.stock_news)
+        for link, title, date in zip(sorted_news["links"], sorted_news["titles"], sorted_news["date"]):
+            st.markdown(f"[{title}]({link}) - {date.strftime('%d/%m/%Y')}")
+        

@@ -194,7 +194,8 @@ finance_metric_features_mapping = {
     "pe" : "PE",
     "forward_pe" : "Forward PE",
     "bvps": "BVPS",
-    "pb" : "P/B"
+    "pb" : "P/B",
+    "market_capitalization": "Vốn hóa thị trường",
 }
 
 def load_css(file_name):
@@ -399,53 +400,47 @@ stock_index_column_tooltips = {
 # Mapping các chỉ số với giải thích và insights
 finance_metric_explanations = {
     "Nước ngoài mua": {
-        "name": "Nước ngoài mua",
         "description": "Số lượng cổ phiếu được nhà đầu tư nước ngoài mua vào trong một khoảng thời gian nhất định.",
         "insights": "Cổ phiếu được mua nhiều bởi nhà đầu tư nước ngoài thường có tiềm năng tăng trưởng hoặc mức độ tin cậy cao."
     },
     "Tỉ lệ sở hữu nước ngoài": {
-        "name": "Tỉ lệ sở hữu nước ngoài",
         "description": "Tỷ lệ phần trăm cổ phiếu của công ty được sở hữu bởi các nhà đầu tư nước ngoài.",
         "insights": "Tỷ lệ cao thể hiện sức hút của công ty đối với nhà đầu tư nước ngoài và có thể là dấu hiệu của một công ty uy tín."
     },
     "Giá trị cổ tức": {
-        "name": "Giá trị cổ tức",
         "description": "Số tiền cổ tức trả trên mỗi cổ phiếu trong một kỳ tài chính.",
         "insights": "Giá trị cao cho thấy công ty có lợi nhuận ổn định và khả năng chi trả cổ tức tốt."
     },
     "Tỷ suất cổ tức": {
-        "name": "Tỷ suất cổ tức",
         "description": "Tỷ lệ giữa cổ tức tiền mặt và giá cổ phiếu hiện tại, thường được thể hiện dưới dạng phần trăm.",
         "insights": "Tỷ suất cao có thể là lựa chọn tốt cho nhà đầu tư tìm kiếm thu nhập thụ động, nhưng cần xem xét sự bền vững của cổ tức."
     },
     "Beta": {
-        "name": "Chỉ số Beta",
         "description": "Đo lường độ biến động của cổ phiếu so với thị trường chung.",
         "insights": "Beta > 1: Cổ phiếu biến động mạnh hơn thị trường. Beta < 1: Cổ phiếu biến động nhẹ hơn thị trường."
     },
     "EPS": {
-        "name": "EPS",
         "description": "Thu nhập trên mỗi cổ phiếu, được tính bằng lợi nhuận sau thuế chia cho số cổ phiếu đang lưu hành.",
         "insights": "EPS cao thường biểu thị công ty đang hoạt động hiệu quả và tạo ra lợi nhuận tốt cho cổ đông."
     },
     "PE": {
-        "name": "PE",
         "description": "Tỷ lệ giá trên thu nhập, cho biết nhà đầu tư sẵn sàng trả bao nhiêu cho mỗi đồng lợi nhuận của công ty.",
         "insights": "PE cao: Công ty có tiềm năng tăng trưởng. PE thấp: Công ty đang bị định giá thấp hoặc có rủi ro."
     },
     "Forward PE": {
-        "name": "Forward PE",
         "description": "Tỷ lệ giá trên thu nhập dự phóng, dùng để đánh giá giá trị cổ phiếu dựa trên EPS dự kiến trong tương lai.",
         "insights": "Forward PE cung cấp góc nhìn về tăng trưởng tương lai và kỳ vọng của thị trường."
     },
     "BVPS": {
-        "name": "BVPS",
         "description": "Giá trị sổ sách trên mỗi cổ phiếu, thể hiện giá trị tài sản thuần của công ty chia cho số cổ phiếu đang lưu hành.",
         "insights": "BVPS cao thể hiện giá trị tài sản của công ty lớn, giúp đánh giá độ an toàn của đầu tư."
     },
     "P/B": {
-        "name": "P/B",
         "description": "Tỷ lệ giá trên giá trị sổ sách, phản ánh mối quan hệ giữa giá cổ phiếu và giá trị tài sản sổ sách.",
         "insights": "P/B thấp: Cổ phiếu bị định giá thấp. P/B cao: Công ty có tiềm năng tăng trưởng nhưng rủi ro định giá cao."
+    },
+    "Vốn hóa thị trường": {
+    "description": "Vốn hóa thị trường là tổng giá trị cổ phiếu đang lưu hành của một công ty, được tính bằng giá cổ phiếu nhân với số lượng cổ phiếu đang lưu hành.",
+    "insights": "Vốn hóa thị trường cao thể hiện công ty có quy mô lớn, ổn định, và có sự tín nhiệm cao từ nhà đầu tư. Công ty với vốn hóa thị trường lớn thường ít có biến động giá hơn, trong khi công ty với vốn hóa nhỏ có thể có tiềm năng tăng trưởng cao nhưng cũng đối mặt với nhiều rủi ro."
     }
 }
