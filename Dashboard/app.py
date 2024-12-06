@@ -497,8 +497,7 @@ def get_stock_data(stock_code, cookies):
     
     # Sắp xếp theo thời gian
     oneday_df = oneday_df[['Thời gian','Giá','KL Lô','KL tích luỹ']]
-    oneday_df = oneday_df.sort_values(by='Thời gian')
-    oneday_df['Thời gian'] = pd.to_datetime(oneday_df['Thời gian'], errors='coerce')
+
     
     return oneday_df
 
@@ -573,10 +572,115 @@ def plot_real_time(stock_code, cookies):
 
     # Lấy dữ liệu và hiển thị
     oneday_df = get_stock_data(stock_code, cookies)
-    st.write(oneday_df)
+    oneday_df['Thời gian'] = pd.to_datetime(oneday_df['Thời gian'], errors='coerce')
+    oneday_df = oneday_df.sort_values(by='Thời gian')
+
+    # Tính giá trị trung bình của giá
+    average_price = oneday_df['Giá'].mean()
+
+    # Tạo subplot
+    fig = make_subplots(
+        rows=2, cols=1, 
+        shared_xaxes=True,
+        vertical_spacing=0.1,
+        subplot_titles=('Biểu đồ Giá theo Thời gian', 'Biểu đồ KL lô theo Thời gian'),
+        row_heights=[0.6, 0.4]
+    )
+
+    # Vẽ từng đoạn đường màu sắc dựa trên vị trí so với đường trung bình
+    for i in range(len(oneday_df) - 1):
+        x_vals = [oneday_df['Thời gian'].iloc[i], oneday_df['Thời gian'].iloc[i + 1]]
+        y_vals = [oneday_df['Giá'].iloc[i], oneday_df['Giá'].iloc[i + 1]]
+
+        if all(y > average_price for y in y_vals):  # Cả hai điểm nằm trên đường trung bình
+            color = 'green'
+        elif all(y < average_price for y in y_vals):  # Cả hai điểm nằm dưới đường trung bình
+            color = 'red'
+        else:
+            # Tìm giao điểm với đường trung bình (nếu đoạn cắt qua đường trung bình)
+            x_cross = x_vals[0] + (x_vals[1] - x_vals[0]) * ((average_price - y_vals[0]) / (y_vals[1] - y_vals[0]))
+            y_cross = average_price
+
+            # Đoạn từ đầu đến giao điểm
+            fig.add_trace(
+                go.Scatter(
+                    x=[x_vals[0], x_cross],
+                    y=[y_vals[0], y_cross],
+                    mode='lines',
+                    line=dict(color='green' if y_vals[0] > average_price else 'red', width=2),
+                    showlegend=False
+                ),
+                row=1, col=1
+            )
+            # Đoạn từ giao điểm đến cuối
+            fig.add_trace(
+                go.Scatter(
+                    x=[x_cross, x_vals[1]],
+                    y=[y_cross, y_vals[1]],
+                    mode='lines',
+                    line=dict(color='green' if y_vals[1] > average_price else 'red', width=2),
+                    showlegend=False
+                ),
+                row=1, col=1
+            )
+            continue
+
+        # Vẽ đoạn đường không cắt qua đường trung bình
+        fig.add_trace(
+            go.Scatter(
+                x=x_vals,
+                y=y_vals,
+                mode='lines',
+                line=dict(color=color, width=2),
+                showlegend=False
+            ),
+            row=1, col=1
+        )
+
+
+    # Vẽ biểu đồ cột cho 'KL tích luỹ'
+    fig.add_trace(
+        go.Bar(x=oneday_df['Thời gian'], y=oneday_df['KL Lô'],
+               name='KL Lô', marker=dict(color='orange')),
+        row=2, col=1
+    )
+
+    # Cập nhật layout
+    fig.update_layout(
+        title='Biểu đồ Giá và KL lô theo Thời gian',
+        height=800,
+        showlegend=True
+    )
+
+    # CSS để đồng bộ chiều cao bảng
+    table_height_css = """
+    <style>
+        .dataframe-container {
+            max-height: 800px;
+            overflow-y: auto;
+        }
+    </style>
+    """
+
+    # Chia bố cục hiển thị
+    col1, col2 = st.columns([2, 1], gap="medium")
+    oneday_df_copy = oneday_df.copy()
+    #Đặt thời gian là index
+    oneday_df_copy['Thời gian'] = oneday_df_copy['Thời gian'].dt.strftime('%H:%M:%S')
+    oneday_df_copy=oneday_df_copy.sort_values(by='Thời gian', ascending=False)
+
+    oneday_df_copy=oneday_df_copy.set_index('Thời gian')
+        # Biểu đồ bên trái
+    with col1:
+        st.plotly_chart(fig, use_container_width=True)
+
+    # Bảng bên phải
+    with col2:
+        st.write("### Dữ liệu Chi tiết")
+        st.markdown(table_height_css, unsafe_allow_html=True)
+        st.dataframe(oneday_df_copy, use_container_width=True, height=700)
+
     
-    # Vẽ biểu đồ
-    plot_stock_data(oneday_df, stock_code)
 
 # Tạo một session để giữ cookies
 session = requests.Session()
