@@ -6,3 +6,4 @@ vector_db/
 logs/
 plugins/
 config/
+stock_data.csv
