@@ -1,7 +1,7 @@
 /logs/
 /plugins/
 __pycache__/
-.env.local
+.local.env
 vector_db/
 logs/
 plugins/
