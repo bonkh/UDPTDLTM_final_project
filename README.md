@@ -56,5 +56,6 @@ Và các phân tích về tình hình cụ thể của mã cổ phiếu và các
 <img src="Images/detail_page_3.png" alt="Chi tiết 3" width="500">
 
 #### 3.4 Chatbot
-Trang cuối cùng là 1 chat bot hỏi đáp hỗ trợ người dùng một số thông tin về tình hình thị trường, dựa trên việc truy vấn trên dữ liệu bài báo thu thập được.
+Trang cuối cùng là 1 chat bot hỏi đáp hỗ trợ người dùng một số thông tin về tình hình thị trường, dựa trên kết quả truy vấn từ dữ liệu bài báo thu thập được.
+
 <img src="Images/chatbot_page.png" alt="Chatbot" width="500">
